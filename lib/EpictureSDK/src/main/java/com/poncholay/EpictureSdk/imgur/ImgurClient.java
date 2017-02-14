@@ -24,7 +24,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class ImgurClient extends EpictureClientAbstract {
 
-	private final String AUTHORIZE_URL = "https://api.imgur.com/oauth2/authorize?response_type=pin&client_id=3560cc6fe6a380b";
+	private final String AUTHORIZE_URL = "https://api.imgur.com/oauth2/authorize?response_type=pin&client_id=";
 	private final String clientId;
 	private final String clientSecret;
 	private String accessToken;
@@ -74,7 +74,7 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	public void authorize(Context context, final CallbackInterface callback) {
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL));
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
 		context.startActivity(browserIntent);
 
 		new MaterialDialog.Builder(context)
