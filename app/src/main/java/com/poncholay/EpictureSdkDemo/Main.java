@@ -73,3 +73,11 @@ public class Main extends Activity {
 		});
 	}
 }
+
+//	Flickr and Imgur API implementation
+//		• Connecting to the Flickr and Imgur platforms
+//		• The photo display put online by the user connected to Flickr and Imgur
+//		• Flickr and Imgur photo finder
+//		• Uploading photos to Flickr and Imgur
+//		• Adding/deleting photos to/from your favorites
+//		• Managing photo display filters

@@ -49,7 +49,6 @@ public abstract class EpictureClientAbstract {
 	}
 
 	protected void getUrl(String url, AsyncHttpResponseHandler responseHandler) {
-		System.out.println(url);
 		client.get(url, null, responseHandler);
 	}
 

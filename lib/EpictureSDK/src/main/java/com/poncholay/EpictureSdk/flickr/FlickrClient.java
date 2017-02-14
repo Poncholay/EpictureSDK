@@ -40,6 +40,13 @@ public class FlickrClient extends EpictureClientAbstract {
 		setRefreshToken(refreshToken);
 	}
 
+	private String encodeUrl(String raw) {
+		try {
+			return URLEncoder.encode(raw, "UTF-8");
+		} catch (UnsupportedEncodingException ignored) {}
+		return raw;
+	}
+
 	private String getParams(List<String> parameters) {
 		String params = "";
 
@@ -55,18 +62,9 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	private String getSignature(String verb, String url, List<String> parameters) {
 		String params = getParams(parameters);
-		String rawSignature;
 
-		try {
-			rawSignature = verb + "&" + URLEncoder.encode(url, "UTF-8") + "&" + URLEncoder.encode(params, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			rawSignature = verb + "&" + url + "&" + params;
-		}
-
-		String key = clientId;
-
-		System.out.println("RAW : ");
-		System.out.println(rawSignature);
+		String rawSignature = verb + "&" + encodeUrl(url) + "&" + encodeUrl(params);
+		String key = clientSecret + "&";
 
 		try {
 			return hmacSha1(rawSignature, key);
@@ -82,32 +80,21 @@ public class FlickrClient extends EpictureClientAbstract {
 	public void authorize(final Context context, final CallbackInterface callback) {
 		List<String> params = new ArrayList<>();
 
-		params.add("oauth_nonce=" + getNonce());
+		params.add("oauth_nonce=" + encodeUrl(getNonce()));
 		params.add("oauth_timestamp=" + new Date().getTime());
 		params.add("oauth_consumer_key=" + clientId);
 		params.add("oauth_signature_method=HMAC-SHA1");
 		params.add("oauth_version=1.0");
-		params.add("format=json");
-		try {
-			params.add("oauth_callback=" + URLEncoder.encode("http://www.example.com", "UTF-8"));
-		} catch (UnsupportedEncodingException ignored) {}
-		params.add("oauth_signature=" + getSignature("GET", AUTHORIZE_URL, params));
-		this.getUrl(AUTHORIZE_URL + "?" + getParams(params), new JsonHttpResponseHandler() {
+		params.add("oauth_callback=oob");
+		this.getUrl(AUTHORIZE_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", AUTHORIZE_URL, params)), new JsonHttpResponseHandler() {
 			@Override
-			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-				System.out.println(response);
-				callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapper.class));
-			}
-
-			@Override
-			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-				System.out.println(errorResponse);
-				callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapper.class));
-			}
-
-			@Override
-			public void onFailure(int statusCode, Header[] headers, String errorResponse, Throwable throwable) {
-				System.out.println(errorResponse);
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				if (statusCode == 200) {
+					System.out.println("Success : " + response);
+				} else {
+					System.out.println("Error : " + response);
+				}
 			}
 		});
 	}
