@@ -2,12 +2,16 @@ package com.poncholay.EpictureSdk;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 
 import com.poncholay.EpictureSdk.imgur.ImgurClient;
+import com.poncholay.EpictureSdk.imgur.model.ImgurAuthorization;
+import com.poncholay.EpictureSdk.imgur.model.ImgurError;
+import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
+import com.poncholay.EpictureSdk.imgur.model.ImgurResponseWrapper;
 
 public class Main extends Activity {
+
+	private EpictureClientAbstract client;
 
 	@Override
 	protected void onCreate(Bundle ignored) {
@@ -16,14 +20,43 @@ public class Main extends Activity {
 		super.onCreate(ignored);
 
 
-		EpictureClient client = new ImgurClient.ImgurClientBuilder()
+		client = new ImgurClient.ImgurClientBuilder()
 				.clientPrivate("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 				.clientId("3560cc6fe6a380b")
-				.accessToken("93a2cf8f5fc17f00f344bdfb928c13e4c225cf30")
-				.refreshToken("b6cfa8f64586b59bbd8578038bcc847ce1b43726")
+				.accessToken("8f23d10d32479a898bfa1c55103f091e09851a15")
+				.refreshToken("b89661208037bea5168ef11c86db3ec28c475d94")
 				.build();
 
-		client.authorize(this);
-		client.me();
+//		doAuthorize();
+		doMe();
+	}
+
+	private void doAuthorize() {
+		client.authorize(this, new CallbackInterface<ImgurAuthorization>() {
+			@Override
+			public void success(ImgurResponseWrapper<ImgurAuthorization> response) {
+				System.out.println("Access token : " + response.data.getAccessToken());
+				doMe();
+			}
+
+			@Override
+			public void error(ImgurResponseWrapper<ImgurError> error) {
+				System.out.println(error.data.getPrettyError());
+			}
+		});
+	}
+
+	private void doMe() {
+		client.me(new CallbackInterface<ImgurUser>() {
+			@Override
+			public void success(ImgurResponseWrapper<ImgurUser> response) {
+				System.out.println("Id : " + response.data.getId());
+			}
+
+			@Override
+			public void error(ImgurResponseWrapper<ImgurError> error) {
+				System.out.println(error.data.getPrettyError());
+			}
+		});
 	}
 }

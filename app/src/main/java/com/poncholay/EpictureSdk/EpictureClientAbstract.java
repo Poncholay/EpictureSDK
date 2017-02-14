@@ -8,18 +8,18 @@ import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
 
-public abstract class EpictureClient {
+public abstract class EpictureClientAbstract {
 
 	private final String URL;
 	private final AsyncHttpClient client;
 
-	protected EpictureClient(String URL) {
+	protected EpictureClientAbstract(String URL) {
 		this.URL = URL;
 		this.client = new AsyncHttpClient();
 	}
 
-	abstract public void authorize(Context context);
-	abstract public void me();
+	abstract public void authorize(Context context, CallbackInterface callback);
+	abstract public void me(CallbackInterface callback);
 
 	protected void setAuthorizationHeader(String accessToken) {
 		client.removeHeader("Authorization:");

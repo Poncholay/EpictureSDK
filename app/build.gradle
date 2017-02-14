@@ -29,6 +29,8 @@ dependencies {
     compile 'com.loopj.android:android-async-http:1.4.9'
     //MaterialDialog
     compile 'com.afollestad.material-dialogs:core:0.9.3.0'
+    //Gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.4'
     //Tests
     androidTestCompile 'junit:junit:4.12'
 }
