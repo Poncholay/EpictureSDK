@@ -1,7 +1,5 @@
 package com.poncholay.EpictureSdk.imgur.model;
 
-import java.util.Date;
-
 public class ImgurUser {
 	private long id;
 	private String url;
