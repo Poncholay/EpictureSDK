@@ -26,6 +26,7 @@ import cz.msebera.android.httpclient.Header;
 public class ImgurClient extends EpictureClientAbstract {
 
 	private final String AUTHORIZE_URL = "https://api.imgur.com/oauth2/authorize?response_type=pin&client_id=";
+	private final String EXCHANGE_URL = "https://api.imgur.com/oauth2/token";
 	private final String clientId;
 	private final String clientSecret;
 	private String accessToken;
@@ -47,7 +48,7 @@ public class ImgurClient extends EpictureClientAbstract {
 		params.add("client_secret", clientSecret);
 		params.add("grant_type", "pin");
 		params.add("pin", pin);
-		this.postUrl("https://api.imgur.com/oauth2/token", params, new JsonHttpResponseHandler() {
+		this.postUrl(EXCHANGE_URL, params, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 				try {
@@ -74,6 +75,7 @@ public class ImgurClient extends EpictureClientAbstract {
 		});
 	}
 
+	@Override
 	public void authorize(Context context, final CallbackInterface callback) {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
 		context.startActivity(browserIntent);
@@ -91,6 +93,7 @@ public class ImgurClient extends EpictureClientAbstract {
 				.show();
 	}
 
+	@Override
 	public void me(final CallbackInterface callback) {
 		this.get("account/me", new JsonHttpResponseHandler() {
 			@Override
@@ -105,18 +108,22 @@ public class ImgurClient extends EpictureClientAbstract {
 		});
 	}
 
+	@Override
 	public String getClientId() {
 		return clientId;
 	}
 
+	@Override
 	public String getClientSecret() {
 		return clientSecret;
 	}
 
+	@Override
 	public String getAccessToken() {
 		return accessToken;
 	}
 
+	@Override
 	public String getRefreshToken() {
 		return refreshToken;
 	}
@@ -133,7 +140,7 @@ public class ImgurClient extends EpictureClientAbstract {
 	public static class ImgurClientBuilder {
 
 		private String nestedClientPublic;
-		private String nestedClientPrivate;
+		private String nestedClientSecret;
 		private String nestedAccessToken;
 		private String nestedRefreshToken;
 
@@ -144,8 +151,8 @@ public class ImgurClient extends EpictureClientAbstract {
 			return this;
 		}
 
-		public ImgurClientBuilder clientPrivate(String clientPrivate) {
-			this.nestedClientPrivate = clientPrivate;
+		public ImgurClientBuilder clientSecret(String clientSecret) {
+			this.nestedClientSecret = clientSecret;
 			return this;
 		}
 
@@ -160,7 +167,7 @@ public class ImgurClient extends EpictureClientAbstract {
 		}
 
 		public ImgurClient build() {
-			return new ImgurClient(nestedClientPublic, nestedClientPrivate, nestedAccessToken, nestedRefreshToken);
+			return new ImgurClient(nestedClientPublic, nestedClientSecret, nestedAccessToken, nestedRefreshToken);
 		}
 	}
 }

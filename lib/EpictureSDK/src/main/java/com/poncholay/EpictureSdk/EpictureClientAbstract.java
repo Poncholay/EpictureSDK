@@ -17,6 +17,11 @@ public abstract class EpictureClientAbstract {
 		this.client = new AsyncHttpClient();
 	}
 
+	abstract public String getClientId();
+	abstract public String getClientSecret();
+	abstract public String getAccessToken();
+	abstract public String getRefreshToken();
+
 	abstract public void authorize(Context context, CallbackInterface callback);
 	abstract public void me(CallbackInterface callback);
 

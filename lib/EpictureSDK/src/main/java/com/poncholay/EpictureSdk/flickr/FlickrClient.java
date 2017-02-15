@@ -10,7 +10,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
+import com.poncholay.EpictureSdk.flickr.model.FlickrAuthorization;
 import com.poncholay.EpictureSdk.flickr.model.FlickrError;
+import com.poncholay.EpictureSdk.model.EpictureAuthorization;
 import com.poncholay.EpictureSdk.model.EpictureError;
 import com.poncholay.EpictureSdk.model.response.CallbackInterface;
 import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
@@ -28,11 +30,13 @@ import cz.msebera.android.httpclient.Header;
 import static com.poncholay.EpictureSdk.utils.HmacSHA1.hmacSha1;
 
 public class FlickrClient extends EpictureClientAbstract {
-	private final String AUTHORIZE_URL = "https://www.flickr.com/services/oauth/request_token";
+	private final String AUTHORIZE_URL = "https://www.flickr.com/services/oauth/authorize";
+	private final String REQUEST_URL = "https://www.flickr.com/services/oauth/request_token";
+	private final String EXCHANGE_URL = "https://www.flickr.com/services/oauth/access_token";
 	private final String clientId;
 	private final String clientSecret;
 	private String accessToken;
-	private String refreshToken;
+	private String privateToken;
 	private Gson gson;
 
 	private FlickrClient(String clientPublic, String clientSecret, String accessToken, String refreshToken) {
@@ -41,7 +45,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		this.clientSecret = clientSecret;
 		this.gson = new GsonBuilder().create();
 		setAccessToken(accessToken);
-		setRefreshToken(refreshToken);
+		setPrivateToken(refreshToken);
 	}
 
 	private String encodeUrl(String raw) {
@@ -64,13 +68,20 @@ public class FlickrClient extends EpictureClientAbstract {
 		return params;
 	}
 
-	private String getSignature(String verb, String url, List<String> parameters) {
+	private List<String> getDefaultParam() {
+		List<String> params = new ArrayList<>();
+		params.add("oauth_timestamp=" + new Date().getTime());
+		params.add("oauth_consumer_key=" + clientId);
+		params.add("oauth_signature_method=HMAC-SHA1");
+		params.add("oauth_version=1.0");
+		return params;
+	}
+
+	private String getSignature(String verb, String url, List<String> parameters, String secret) {
 		String params = getParams(parameters);
 
 		String rawSignature = verb + "&" + encodeUrl(url) + "&" + encodeUrl(params);
-		String key = clientSecret + "&";
-
-		System.out.println("RAW : " + rawSignature);
+		String key = clientSecret + "&" + secret;
 
 		try {
 			return hmacSha1(rawSignature, key);
@@ -100,11 +111,42 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	private void exchangePinForTokens(String pin, final CallbackInterface callback) {
-		System.out.println("OLEJOI");
+		List<String> params = getDefaultParam();
+
+		params.add("oauth_nonce=" + encodeUrl(getNonce()));
+		params.add("oauth_verifier=" + pin);
+		params.add("oauth_token=" + accessToken);
+		this.getUrl(EXCHANGE_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", EXCHANGE_URL, params, privateToken)), new JsonHttpResponseHandler() {
+			@Override
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				if (statusCode == 200) {
+					if (parseResponseForParam(response, "oauth_token") != null && parseResponseForParam(response, "oauth_token_secret") != null) {
+						setAccessToken(parseResponseForParam(response, "oauth_token"));
+						setPrivateToken(parseResponseForParam(response, "oauth_token_secret"));
+
+						EpictureAuthorization data = new FlickrAuthorization();
+						data.setAccessToken(accessToken);
+						data.setRefreshToken(privateToken);
+						ResponseWrapper<EpictureAuthorization> ret = new ResponseWrapper<>(true, statusCode, data);
+						callback.success(ret);
+
+						return;
+					}
+					EpictureError data = new FlickrError();
+					data.setError("Flickr responded oddly");
+					callback.error(new ResponseWrapper<>(true, statusCode, data));
+				} else {
+					EpictureError data = new FlickrError();
+					data.setError(response);
+					callback.error(new ResponseWrapper<>(true, statusCode, data));
+				}
+			}
+		});
 	}
 
-	private void authorizeToken(Context context, final CallbackInterface callback, String oauthToken, String oauthTokenSecret) {
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.flickr.com/services/oauth/authorize?oauth_token=" + oauthToken));
+	private void authorizeToken(Context context, final CallbackInterface callback) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken));
 		context.startActivity(browserIntent);
 
 		new MaterialDialog.Builder(context)
@@ -120,28 +162,25 @@ public class FlickrClient extends EpictureClientAbstract {
 				.show();
 	}
 
+	@Override
 	public void authorize(final Context context, final CallbackInterface callback) {
-		List<String> params = new ArrayList<>();
+		List<String> params = getDefaultParam();
 
 		params.add("oauth_nonce=" + encodeUrl(getNonce()));
-		params.add("oauth_timestamp=" + new Date().getTime());
-		params.add("oauth_consumer_key=" + clientId);
-		params.add("oauth_signature_method=HMAC-SHA1");
-		params.add("oauth_version=1.0");
 		params.add("oauth_callback=oob");
-		this.getUrl(AUTHORIZE_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", AUTHORIZE_URL, params)), new JsonHttpResponseHandler() {
+		this.getUrl(REQUEST_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", REQUEST_URL, params, "")), new JsonHttpResponseHandler() {
 			@Override
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here
 				if (statusCode == 200) {
-					String oauthToken = parseResponseForParam(response, "oauth_token");
-					String oauthTokenSecret = parseResponseForParam(response, "oauth_token_secret");
-					if (oauthToken == null || oauthTokenSecret == null) {
+					accessToken = parseResponseForParam(response, "oauth_token");
+					privateToken = parseResponseForParam(response, "oauth_token_secret");
+					if (accessToken == null || privateToken == null) {
 						EpictureError data = new FlickrError();
 						data.setError("Flickr responded oddly");
 						callback.error(new ResponseWrapper<>(true, statusCode, data));
 					}
-					authorizeToken(context, callback, oauthToken, oauthTokenSecret);
+					authorizeToken(context, callback);
 				} else {
 					EpictureError data = new FlickrError();
 					data.setError(response);
@@ -151,38 +190,43 @@ public class FlickrClient extends EpictureClientAbstract {
 		});
 	}
 
+	@Override
 	public void me(CallbackInterface callback) {
 
 	}
 
+	@Override
 	public String getClientId() {
 		return clientId;
 	}
 
+	@Override
 	public String getClientSecret() {
 		return clientSecret;
 	}
 
+	@Override
 	public String getAccessToken() {
 		return accessToken;
 	}
 
+	@Override
 	public String getRefreshToken() {
-		return refreshToken;
+		return privateToken;
 	}
 
 	private void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
 
-	private void setRefreshToken(String refreshToken) {
-		this.refreshToken = refreshToken;
+	private void setPrivateToken(String privateToken) {
+		this.privateToken = privateToken;
 	}
 
 	public static class FlickrClientBuilder {
 
 		private String nestedClientPublic;
-		private String nestedClientPrivate;
+		private String nestedClientSecret;
 		private String nestedAccessToken;
 		private String nestedRefreshToken;
 
@@ -193,8 +237,8 @@ public class FlickrClient extends EpictureClientAbstract {
 			return this;
 		}
 
-		public FlickrClientBuilder clientPrivate(String clientPrivate) {
-			this.nestedClientPrivate = clientPrivate;
+		public FlickrClientBuilder clientSecret(String clientSecret) {
+			this.nestedClientSecret = clientSecret;
 			return this;
 		}
 
@@ -209,7 +253,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		}
 
 		public FlickrClient build() {
-			return new FlickrClient(nestedClientPublic, nestedClientPrivate, nestedAccessToken, nestedRefreshToken);
+			return new FlickrClient(nestedClientPublic, nestedClientSecret, nestedAccessToken, nestedRefreshToken);
 		}
 	}
 }

@@ -24,23 +24,23 @@ public class Main extends Activity {
 
 
 		client = new ImgurClient.ImgurClientBuilder()
-				.clientPrivate("e18f03df7f0e0bac37285b83f1b4264644d230d2")
+				.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 				.clientId("3560cc6fe6a380b")
-				.accessToken("8f23d10d32479a898bfa1c55103f091e09851a15")
-				.refreshToken("b89661208037bea5168ef11c86db3ec28c475d94")
+				.accessToken("f6a28e028df26540d431c1659289657baa085963")
+				.refreshToken("497d08f26bafbed7a8e91bb2d862b0b89487c4d0")
 				.build();
 
 //		doAuthorize();
 		doMe();
 
 		client = new FlickrClient.FlickrClientBuilder()
-				.clientPrivate("80861547e3099611")
+				.clientSecret("80861547e3099611")
 				.clientId("e00ba2ba9f093e1b4d777d24fd3c2d9f")
-				.accessToken("")
-				.refreshToken("")
+				.accessToken("72157676863555643-77d003c2604a4e58")
+				.refreshToken("1bc9e607599835d0")
 				.build();
 
-		doAuthorize();
+//		doAuthorize();
 		doMe();
 	}
 
@@ -49,6 +49,7 @@ public class Main extends Activity {
 			@Override
 			public void success(ResponseWrapper<EpictureAuthorization> response) {
 				System.out.println("Access token : " + response.data.getAccessToken());
+				System.out.println("Refresh token : " + response.data.getRefreshToken());
 				doMe();
 			}
 
@@ -75,9 +76,9 @@ public class Main extends Activity {
 }
 
 //	Flickr and Imgur API implementation
-//		• Connecting to the Flickr and Imgur platforms
-//		• The photo display put online by the user connected to Flickr and Imgur
-//		• Flickr and Imgur photo finder
-//		• Uploading photos to Flickr and Imgur
-//		• Adding/deleting photos to/from your favorites
-//		• Managing photo display filters
+//		OK • Connecting to the Flickr and Imgur platforms
+//		   • The photo display put online by the user connected to Flickr and Imgur
+//		   • Flickr and Imgur photo finder
+//		   • Uploading photos to Flickr and Imgur
+//		   • Adding/deleting photos to/from your favorites
+//		   • Managing photo display filters
