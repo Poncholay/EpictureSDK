@@ -3,14 +3,14 @@ package com.poncholay.EpictureSdkDemo;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.poncholay.EpictureSdk.CallbackInterface;
+import com.poncholay.EpictureSdk.model.EpictureUser;
+import com.poncholay.EpictureSdk.model.response.CallbackInterface;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.FlickrClient;
 import com.poncholay.EpictureSdk.imgur.ImgurClient;
-import com.poncholay.EpictureSdk.imgur.model.ImgurAuthorization;
-import com.poncholay.EpictureSdk.imgur.model.ImgurError;
-import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
-import com.poncholay.EpictureSdk.imgur.model.ImgurResponseWrapper;
+import com.poncholay.EpictureSdk.model.EpictureAuthorization;
+import com.poncholay.EpictureSdk.model.EpictureError;
+import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
 
 public class Main extends Activity {
 
@@ -45,29 +45,29 @@ public class Main extends Activity {
 	}
 
 	private void doAuthorize() {
-		client.authorize(this, new CallbackInterface<ImgurAuthorization>() {
+		client.authorize(this, new CallbackInterface<EpictureAuthorization>() {
 			@Override
-			public void success(ImgurResponseWrapper<ImgurAuthorization> response) {
+			public void success(ResponseWrapper<EpictureAuthorization> response) {
 				System.out.println("Access token : " + response.data.getAccessToken());
 				doMe();
 			}
 
 			@Override
-			public void error(ImgurResponseWrapper<ImgurError> error) {
+			public void error(ResponseWrapper<EpictureError> error) {
 				System.out.println(error.data.getPrettyError());
 			}
 		});
 	}
 
 	private void doMe() {
-		client.me(new CallbackInterface<ImgurUser>() {
+		client.me(new CallbackInterface<EpictureUser>() {
 			@Override
-			public void success(ImgurResponseWrapper<ImgurUser> response) {
+			public void success(ResponseWrapper<EpictureUser> response) {
 				System.out.println("Id : " + response.data.getId());
 			}
 
 			@Override
-			public void error(ImgurResponseWrapper<ImgurError> error) {
+			public void error(ResponseWrapper<EpictureError> error) {
 				System.out.println(error.data.getPrettyError());
 			}
 		});

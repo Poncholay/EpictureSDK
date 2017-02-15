@@ -10,12 +10,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.poncholay.EpictureSdk.CallbackInterface;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.imgur.model.ImgurAuthorization;
 import com.poncholay.EpictureSdk.imgur.model.ImgurError;
-import com.poncholay.EpictureSdk.imgur.model.ImgurResponseWrapper;
 import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
+import com.poncholay.EpictureSdk.model.EpictureAuthorization;
+import com.poncholay.EpictureSdk.model.response.CallbackInterface;
+import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,13 +54,13 @@ public class ImgurClient extends EpictureClientAbstract {
 					if (response.has("access_token") && response.has("refresh_token")) {
 						setAccessToken(response.getString("access_token"));
 						setRefreshToken(response.getString("refresh_token"));
-						ImgurResponseWrapper<ImgurAuthorization> ret = new ImgurResponseWrapper<>();
-						ret.status = statusCode;
-						ret.success = true;
-						ret.data = new ImgurAuthorization();
-						ret.data.setAccessToken(accessToken);
-						ret.data.setRefreshToken(refreshToken);
+
+						EpictureAuthorization data = new ImgurAuthorization();
+						data.setAccessToken(accessToken);
+						data.setRefreshToken(refreshToken);
+						ResponseWrapper<EpictureAuthorization> ret = new ResponseWrapper<>(true, statusCode, data);
 						callback.success(ret);
+
 						return;
 					}
 				} catch (JSONException ignored) {}

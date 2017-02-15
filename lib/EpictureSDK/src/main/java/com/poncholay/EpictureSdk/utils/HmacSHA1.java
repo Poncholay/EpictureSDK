@@ -1,4 +1,4 @@
-package com.poncholay.EpictureSdk;
+package com.poncholay.EpictureSdk.utils;
 
 import android.util.Base64;
 

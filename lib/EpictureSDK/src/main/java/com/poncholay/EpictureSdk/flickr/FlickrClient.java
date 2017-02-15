@@ -1,27 +1,31 @@
 package com.poncholay.EpictureSdk.flickr;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.poncholay.EpictureSdk.CallbackInterface;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
-import com.poncholay.EpictureSdk.imgur.model.ImgurError;
-import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
-
-import org.json.JSONObject;
+import com.poncholay.EpictureSdk.flickr.model.FlickrError;
+import com.poncholay.EpictureSdk.model.EpictureError;
+import com.poncholay.EpictureSdk.model.response.CallbackInterface;
+import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
 
-import static com.poncholay.EpictureSdk.HmacSHA1.hmacSha1;
+import static com.poncholay.EpictureSdk.utils.HmacSHA1.hmacSha1;
 
 public class FlickrClient extends EpictureClientAbstract {
 	private final String AUTHORIZE_URL = "https://www.flickr.com/services/oauth/request_token";
@@ -42,7 +46,7 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	private String encodeUrl(String raw) {
 		try {
-			return URLEncoder.encode(raw, "UTF-8");
+			return URLEncoder.encode(raw.replace("+", "%2b"), "UTF-8");
 		} catch (UnsupportedEncodingException ignored) {}
 		return raw;
 	}
@@ -66,6 +70,8 @@ public class FlickrClient extends EpictureClientAbstract {
 		String rawSignature = verb + "&" + encodeUrl(url) + "&" + encodeUrl(params);
 		String key = clientSecret + "&";
 
+		System.out.println("RAW : " + rawSignature);
+
 		try {
 			return hmacSha1(rawSignature, key);
 		} catch (Exception e) {
@@ -75,6 +81,43 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	private String getNonce() {
 		return UUID.randomUUID().toString();
+	}
+
+	private String parseResponseForParam(String response, String keyToFind) {
+		String[] params = response.split("&");
+
+		for (String param : params) {
+			String[] parts = param.split("=");
+			if (parts.length == 2) {
+				String key = parts[0];
+				String value = parts[1];
+				if (Objects.equals(key, keyToFind)) {
+					return value;
+				}
+			}
+		}
+		return null;
+	}
+
+	private void exchangePinForTokens(String pin, final CallbackInterface callback) {
+		System.out.println("OLEJOI");
+	}
+
+	private void authorizeToken(Context context, final CallbackInterface callback, String oauthToken, String oauthTokenSecret) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.flickr.com/services/oauth/authorize?oauth_token=" + oauthToken));
+		context.startActivity(browserIntent);
+
+		new MaterialDialog.Builder(context)
+				.title("Enter Pin")
+				.positiveText("Validate")
+				.negativeText("Cancel")
+				.input("Pin", null, new MaterialDialog.InputCallback() {
+					@Override
+					public void onInput(@NonNull MaterialDialog dialog, @NonNull CharSequence input) {
+						exchangePinForTokens(input.toString(), callback);
+					}
+				})
+				.show();
 	}
 
 	public void authorize(final Context context, final CallbackInterface callback) {
@@ -91,9 +134,18 @@ public class FlickrClient extends EpictureClientAbstract {
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here
 				if (statusCode == 200) {
-					System.out.println("Success : " + response);
+					String oauthToken = parseResponseForParam(response, "oauth_token");
+					String oauthTokenSecret = parseResponseForParam(response, "oauth_token_secret");
+					if (oauthToken == null || oauthTokenSecret == null) {
+						EpictureError data = new FlickrError();
+						data.setError("Flickr responded oddly");
+						callback.error(new ResponseWrapper<>(true, statusCode, data));
+					}
+					authorizeToken(context, callback, oauthToken, oauthTokenSecret);
 				} else {
-					System.out.println("Error : " + response);
+					EpictureError data = new FlickrError();
+					data.setError(response);
+					callback.error(new ResponseWrapper<>(true, statusCode, data));
 				}
 			}
 		});

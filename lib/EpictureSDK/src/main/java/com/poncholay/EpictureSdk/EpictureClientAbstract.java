@@ -5,6 +5,7 @@ import android.content.Context;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.poncholay.EpictureSdk.model.response.CallbackInterface;
 
 public abstract class EpictureClientAbstract {
 
