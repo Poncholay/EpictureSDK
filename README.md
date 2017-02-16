@@ -1,2 +1,3 @@
 # EpictureSDK
-An SDK interface to browse various image sharing sites like Imgur and Flickr
+An SDK interface and implementation of Imgur and Flickr Apis
+It simplifies the authentication, the use of Oauth and the Api calls
