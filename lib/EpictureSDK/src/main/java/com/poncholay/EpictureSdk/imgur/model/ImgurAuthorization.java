@@ -1,7 +1,7 @@
 package com.poncholay.EpictureSdk.imgur.model;
 
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class ImgurAuthorization implements EpictureAuthorization {
 	private String accessToken;
@@ -27,5 +27,5 @@ public class ImgurAuthorization implements EpictureAuthorization {
 		this.refreshToken = refreshToken;
 	}
 
-	public class ImgurAuthorizationWrapper extends ResponseWrapper<ImgurAuthorization> {}
+	public class ImgurAuthorizationWrapperEpicture extends EpictureResponseWrapper<ImgurAuthorization> {}
 }

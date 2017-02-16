@@ -15,8 +15,8 @@ import com.poncholay.EpictureSdk.imgur.model.ImgurAuthorization;
 import com.poncholay.EpictureSdk.imgur.model.ImgurError;
 import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
-import com.poncholay.EpictureSdk.model.response.CallbackInterface;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +42,7 @@ public class ImgurClient extends EpictureClientAbstract {
 		setRefreshToken(refreshToken);
 	}
 
-	private void exchangePinForTokens(String pin, final CallbackInterface callback) {
+	private void exchangePinForTokens(String pin, final EpictureCallbackInterface callback) {
 		RequestParams params = new RequestParams();
 		params.add("client_id", clientId);
 		params.add("client_secret", clientSecret);
@@ -59,24 +59,24 @@ public class ImgurClient extends EpictureClientAbstract {
 						EpictureAuthorization data = new ImgurAuthorization();
 						data.setAccessToken(accessToken);
 						data.setRefreshToken(refreshToken);
-						ResponseWrapper<EpictureAuthorization> ret = new ResponseWrapper<>(true, statusCode, data);
+						EpictureResponseWrapper<EpictureAuthorization> ret = new EpictureResponseWrapper<>(true, statusCode, data);
 						callback.success(ret);
 
 						return;
 					}
 				} catch (JSONException ignored) {}
-				callback.error(gson.fromJson(response.toString(), ImgurError.ImgurErrorWrapper.class));
+				callback.error(gson.fromJson(response.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
 			}
 
 			@Override
 			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-				callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapper.class));
+				callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
 			}
 		});
 	}
 
 	@Override
-	public void authorize(Context context, final CallbackInterface callback) {
+	public void authorize(Context context, final EpictureCallbackInterface callback) {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
 		context.startActivity(browserIntent);
 
@@ -94,16 +94,16 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void me(final CallbackInterface callback) {
+	public void me(final EpictureCallbackInterface callback) {
 		this.get("account/me", new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-				callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapper.class));
+				callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapperEpicture.class));
 			}
 
 			@Override
 			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-				callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapper.class));
+				callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
 			}
 		});
 	}

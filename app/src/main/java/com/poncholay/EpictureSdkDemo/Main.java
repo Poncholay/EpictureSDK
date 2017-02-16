@@ -4,13 +4,13 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.poncholay.EpictureSdk.model.EpictureUser;
-import com.poncholay.EpictureSdk.model.response.CallbackInterface;
+import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.FlickrClient;
 import com.poncholay.EpictureSdk.imgur.ImgurClient;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
 import com.poncholay.EpictureSdk.model.EpictureError;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class Main extends Activity {
 
@@ -45,30 +45,30 @@ public class Main extends Activity {
 	}
 
 	private void doAuthorize() {
-		client.authorize(this, new CallbackInterface<EpictureAuthorization>() {
+		client.authorize(this, new EpictureCallbackInterface<EpictureAuthorization>() {
 			@Override
-			public void success(ResponseWrapper<EpictureAuthorization> response) {
+			public void success(EpictureResponseWrapper<EpictureAuthorization> response) {
 				System.out.println("Access token : " + response.data.getAccessToken());
 				System.out.println("Refresh token : " + response.data.getRefreshToken());
 				doMe();
 			}
 
 			@Override
-			public void error(ResponseWrapper<EpictureError> error) {
+			public void error(EpictureResponseWrapper<EpictureError> error) {
 				System.out.println(error.data.getPrettyError());
 			}
 		});
 	}
 
 	private void doMe() {
-		client.me(new CallbackInterface<EpictureUser>() {
+		client.me(new EpictureCallbackInterface<EpictureUser>() {
 			@Override
-			public void success(ResponseWrapper<EpictureUser> response) {
+			public void success(EpictureResponseWrapper<EpictureUser> response) {
 				System.out.println("Id : " + response.data.getId());
 			}
 
 			@Override
-			public void error(ResponseWrapper<EpictureError> error) {
+			public void error(EpictureResponseWrapper<EpictureError> error) {
 				System.out.println(error.data.getPrettyError());
 			}
 		});

@@ -1,7 +1,7 @@
 package com.poncholay.EpictureSdk.imgur.model;
 
 import com.poncholay.EpictureSdk.model.EpictureError;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class ImgurError implements EpictureError {
 	private String error;
@@ -39,5 +39,5 @@ public class ImgurError implements EpictureError {
 		this.method = method;
 	}
 
-	public class ImgurErrorWrapper extends ResponseWrapper<ImgurError> {}
+	public class ImgurErrorWrapperEpicture extends EpictureResponseWrapper<ImgurError> {}
 }

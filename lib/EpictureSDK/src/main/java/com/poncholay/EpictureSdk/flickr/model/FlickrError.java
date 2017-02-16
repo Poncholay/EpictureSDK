@@ -1,7 +1,7 @@
 package com.poncholay.EpictureSdk.flickr.model;
 
 import com.poncholay.EpictureSdk.model.EpictureError;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class FlickrError implements EpictureError {
 	private String error;
@@ -21,5 +21,5 @@ public class FlickrError implements EpictureError {
 		this.error = error;
 	}
 
-	public class FlickrErrorWrapper extends ResponseWrapper<FlickrError> {}
+	public class FlickrErrorWrapperEpicture extends EpictureResponseWrapper<FlickrError> {}
 }

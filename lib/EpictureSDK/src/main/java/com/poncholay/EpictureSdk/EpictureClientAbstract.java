@@ -5,7 +5,7 @@ import android.content.Context;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.poncholay.EpictureSdk.model.response.CallbackInterface;
+import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 
 public abstract class EpictureClientAbstract {
 
@@ -22,8 +22,8 @@ public abstract class EpictureClientAbstract {
 	abstract public String getAccessToken();
 	abstract public String getRefreshToken();
 
-	abstract public void authorize(Context context, CallbackInterface callback);
-	abstract public void me(CallbackInterface callback);
+	abstract public void authorize(Context context, EpictureCallbackInterface callback);
+	abstract public void me(EpictureCallbackInterface callback);
 
 	protected void setAuthorizationHeader(String accessToken) {
 		client.removeHeader("Authorization:");

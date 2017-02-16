@@ -1,7 +1,7 @@
 package com.poncholay.EpictureSdk.flickr.model;
 
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class FlickrAuthorization implements EpictureAuthorization {
 	private String accessToken;
@@ -27,5 +27,5 @@ public class FlickrAuthorization implements EpictureAuthorization {
 		this.refreshToken = refreshToken;
 	}
 
-	public class FlickrAuthorizationWrapper extends ResponseWrapper<FlickrAuthorization> {}
+	public class FlickrAuthorizationWrapperEpicture extends EpictureResponseWrapper<FlickrAuthorization> {}
 }

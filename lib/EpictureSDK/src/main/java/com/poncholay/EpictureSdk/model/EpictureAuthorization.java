@@ -1,6 +1,6 @@
 package com.poncholay.EpictureSdk.model;
 
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public interface EpictureAuthorization {
 	public String getAccessToken();
@@ -8,5 +8,5 @@ public interface EpictureAuthorization {
 	public String getRefreshToken();
 	public void setRefreshToken(String refreshToken);
 
-	public class EpictureAuthorizationWrapper extends ResponseWrapper<EpictureAuthorization> {}
+	public class EpictureAuthorizationWrapperEpicture extends EpictureResponseWrapper<EpictureAuthorization> {}
 }

@@ -1,7 +1,7 @@
 package com.poncholay.EpictureSdk.imgur.model;
 
 import com.poncholay.EpictureSdk.model.EpictureUser;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class ImgurUser implements EpictureUser {
 	private long id;
@@ -61,5 +61,5 @@ public class ImgurUser implements EpictureUser {
 		this.created = created;
 	}
 
-	public class ImgurUserWrapper extends ResponseWrapper<ImgurUser> {}
+	public class ImgurUserWrapperEpicture extends EpictureResponseWrapper<ImgurUser> {}
 }

@@ -1,11 +1,11 @@
 package com.poncholay.EpictureSdk.model;
 
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public interface EpictureError {
 	public String getPrettyError();
 	public String getError();
 	public void setError(String error);
 
-	public class ErrorWrapper extends ResponseWrapper<Error> {}
+	public class ErrorWrapperEpicture extends EpictureResponseWrapper<Error> {}
 }

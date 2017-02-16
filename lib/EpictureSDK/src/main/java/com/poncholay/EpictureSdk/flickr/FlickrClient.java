@@ -14,8 +14,8 @@ import com.poncholay.EpictureSdk.flickr.model.FlickrAuthorization;
 import com.poncholay.EpictureSdk.flickr.model.FlickrError;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
 import com.poncholay.EpictureSdk.model.EpictureError;
-import com.poncholay.EpictureSdk.model.response.CallbackInterface;
-import com.poncholay.EpictureSdk.model.response.ResponseWrapper;
+import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -110,7 +110,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		return null;
 	}
 
-	private void exchangePinForTokens(String pin, final CallbackInterface callback) {
+	private void exchangePinForTokens(String pin, final EpictureCallbackInterface callback) {
 		List<String> params = getDefaultParam();
 
 		params.add("oauth_nonce=" + encodeUrl(getNonce()));
@@ -128,24 +128,24 @@ public class FlickrClient extends EpictureClientAbstract {
 						EpictureAuthorization data = new FlickrAuthorization();
 						data.setAccessToken(accessToken);
 						data.setRefreshToken(privateToken);
-						ResponseWrapper<EpictureAuthorization> ret = new ResponseWrapper<>(true, statusCode, data);
+						EpictureResponseWrapper<EpictureAuthorization> ret = new EpictureResponseWrapper<>(true, statusCode, data);
 						callback.success(ret);
 
 						return;
 					}
 					EpictureError data = new FlickrError();
 					data.setError("Flickr responded oddly");
-					callback.error(new ResponseWrapper<>(true, statusCode, data));
+					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
 				} else {
 					EpictureError data = new FlickrError();
 					data.setError(response);
-					callback.error(new ResponseWrapper<>(true, statusCode, data));
+					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
 				}
 			}
 		});
 	}
 
-	private void authorizeToken(Context context, final CallbackInterface callback) {
+	private void authorizeToken(Context context, final EpictureCallbackInterface callback) {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken));
 		context.startActivity(browserIntent);
 
@@ -163,7 +163,7 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void authorize(final Context context, final CallbackInterface callback) {
+	public void authorize(final Context context, final EpictureCallbackInterface callback) {
 		List<String> params = getDefaultParam();
 
 		params.add("oauth_nonce=" + encodeUrl(getNonce()));
@@ -178,20 +178,20 @@ public class FlickrClient extends EpictureClientAbstract {
 					if (accessToken == null || privateToken == null) {
 						EpictureError data = new FlickrError();
 						data.setError("Flickr responded oddly");
-						callback.error(new ResponseWrapper<>(true, statusCode, data));
+						callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
 					}
 					authorizeToken(context, callback);
 				} else {
 					EpictureError data = new FlickrError();
 					data.setError(response);
-					callback.error(new ResponseWrapper<>(true, statusCode, data));
+					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
 				}
 			}
 		});
 	}
 
 	@Override
-	public void me(CallbackInterface callback) {
+	public void me(EpictureCallbackInterface callback) {
 
 	}
 
