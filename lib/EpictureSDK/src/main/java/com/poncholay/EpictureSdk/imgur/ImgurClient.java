@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
@@ -144,11 +145,7 @@ public class ImgurClient extends EpictureClientAbstract {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 				if (callback != null) {
-					try {
-						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureWrapperEpicture.class));
-					} catch (Exception e) {
-						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "favoriteImage")));
-					}
+					callback.success(new EpictureResponseWrapper<>(true, statusCode, true));
 				}
 			}
 

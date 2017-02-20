@@ -152,13 +152,11 @@ public class Main extends Activity {
 	}
 
 	private void doFavoriteImage(final EpictureClientAbstract client) {
-		client.favoriteImage("Uo6bfo4", new EpictureCallbackInterface<EpicturePicture>() {
+		client.favoriteImage("Uo6bfo4", new EpictureCallbackInterface<Boolean>() {
 			@Override
-			public void success(EpictureResponseWrapper<EpicturePicture> response) {
-				mAdapter.add("Url : " + response.data.getUrl());
-				mAdapter.add("Thumbnail : " + response.data.getThumbnail());
-				Log.d(TAG, "Url : " + response.data.getUrl());
-				Log.d(TAG, "Thumbnail : " + response.data.getThumbnail());
+			public void success(EpictureResponseWrapper<Boolean> response) {
+				mAdapter.add("Favorited : " + response.data);
+				Log.d(TAG, "Favorited : " + response.data);
 			}
 
 			@Override
