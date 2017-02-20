@@ -68,14 +68,22 @@ public class ImgurClient extends EpictureClientAbstract {
 					}
 				} catch (JSONException ignored) {}
 				if (callback != null) {
-					callback.error(gson.fromJson(response.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					try {
+						callback.error(gson.fromJson(response.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "authorize")));
+					}
 				}
 			}
 
 			@Override
 			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
 				if (callback != null) {
-					callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "authorize")));
+					}
 				}
 			}
 		});
@@ -109,33 +117,76 @@ public class ImgurClient extends EpictureClientAbstract {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 				if (callback != null) {
-					callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapperEpicture.class));
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "me")));
+					}
 				}
 			}
 
 			@Override
 			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
 				if (callback != null) {
-					callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "me")));
+					}
 				}
 			}
 		});
 	}
 
 	@Override
-	public void favorite(String id, final EpictureCallbackInterface callback) {
+	public void favoriteImage(String id, final EpictureCallbackInterface callback) {
 		this.post("image/" + (id == null ? "" : id) + "/favorite", new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 				if (callback != null) {
-					callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureWrapperEpicture.class));
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "favoriteImage")));
+					}
 				}
 			}
 
 			@Override
 			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
 				if (callback != null) {
-					callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "favoriteImage")));
+					}
+				}
+			}
+		});
+	}
+
+	@Override
+	public void getImage(String id, final EpictureCallbackInterface callback) {
+		this.get("image/" + (id == null ? "" : id), new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+				if (callback != null) {
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImage")));
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+				if (callback != null) {
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImage")));
+					}
 				}
 			}
 		});

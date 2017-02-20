@@ -6,8 +6,8 @@ public interface EpicturePicture {
 	String getUrl();
 	String getThumbnail();
 
-	long getId();
-	void setId(long id);
+	String getId();
+	void setId(String id);
 	String getTitle();
 	void setTitle(String title);
 

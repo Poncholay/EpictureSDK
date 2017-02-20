@@ -231,9 +231,16 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void favorite(String id, EpictureCallbackInterface callback) {
+	public void favoriteImage(String id, EpictureCallbackInterface callback) {
 		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "favorite")));
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "favoriteImage")));
+		}
+	}
+
+	@Override
+	public void getImage(String id, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
 		}
 	}
 

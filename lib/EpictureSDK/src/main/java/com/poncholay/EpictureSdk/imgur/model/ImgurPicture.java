@@ -4,7 +4,7 @@ import com.poncholay.EpictureSdk.model.EpicturePicture;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class ImgurPicture implements EpicturePicture {
-	private long id;
+	private String id;
 	private String title;
 	private String link;
 
@@ -28,12 +28,12 @@ public class ImgurPicture implements EpicturePicture {
 	}
 
 	@Override
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
 	@Override
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

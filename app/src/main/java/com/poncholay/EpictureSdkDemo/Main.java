@@ -93,8 +93,8 @@ public class Main extends Activity {
 				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder()
 						.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 						.clientId("3560cc6fe6a380b")
-						.accessToken("86176f229710c3a32e5895a5d34354e0febe560d")
-						.refreshToken("c0ca3166d76e95d205048551ea3095933beedbb3")
+						.accessToken("d742b4041b4fa59039b9d651587d009e8eaca2e4")
+						.refreshToken("56c8ef00bc5185969d62b4f3f222903e8764ed08")
 						.build();
 				doTests(client);
 			}
@@ -128,7 +128,8 @@ public class Main extends Activity {
 
 	private void doTests(final EpictureClientAbstract client) {
 		doMe(client);
-		doFavorite(client);
+		doFavoriteImage(client);
+		doGetImage(client);
 	}
 
 	private void doAuthorize(final EpictureClientAbstract client) {
@@ -150,8 +151,26 @@ public class Main extends Activity {
 		});
 	}
 
-	private void doFavorite(final EpictureClientAbstract client) {
-		client.favorite("Hr8si", new EpictureCallbackInterface<EpicturePicture>() {
+	private void doFavoriteImage(final EpictureClientAbstract client) {
+		client.favoriteImage("Uo6bfo4", new EpictureCallbackInterface<EpicturePicture>() {
+			@Override
+			public void success(EpictureResponseWrapper<EpicturePicture> response) {
+				mAdapter.add("Url : " + response.data.getUrl());
+				mAdapter.add("Thumbnail : " + response.data.getThumbnail());
+				Log.d(TAG, "Url : " + response.data.getUrl());
+				Log.d(TAG, "Thumbnail : " + response.data.getThumbnail());
+			}
+
+			@Override
+			public void error(EpictureResponseWrapper<EpictureError> error) {
+				mAdapter.add(error.data.getPrettyError());
+				Log.d(TAG, error.data.getPrettyError());
+			}
+		});
+	}
+
+	private void doGetImage(final EpictureClientAbstract client) {
+		client.getImage("Uo6bfo4", new EpictureCallbackInterface<EpicturePicture>() {
 			@Override
 			public void success(EpictureResponseWrapper<EpicturePicture> response) {
 				mAdapter.add("Url : " + response.data.getUrl());

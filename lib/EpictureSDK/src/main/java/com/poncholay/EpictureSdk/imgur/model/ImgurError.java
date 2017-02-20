@@ -20,6 +20,8 @@ public class ImgurError implements EpictureError {
 	public ImgurError(String error, String SDKMethod) {
 		this.error = error;
 		this.SDKMethod = SDKMethod;
+		this.request = "";
+		this.method = "";
 	}
 
 	@Override
