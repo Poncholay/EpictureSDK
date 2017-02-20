@@ -18,10 +18,10 @@ import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
@@ -59,44 +59,58 @@ public class FlickrClient extends EpictureClientAbstract {
 		return raw;
 	}
 
-
-	private String getParamString(List<String> parameters) {
+	private String getParamString(TreeMap<String, String> parameters) {
 		StringBuilder buffer = new StringBuilder();
 
-		java.util.Collections.sort(parameters);
-		for (int i = 0; i < parameters.size(); i++) {
-			buffer.append(parameters.get(i));
-			if (i + 1 < parameters.size()) {
+		boolean first = true;
+		for (Map.Entry<String, String> bundle : parameters.entrySet()) {
+			if (!first) {
 				buffer.append('&');
+			} else {
+				first = false;
 			}
+			buffer.append(bundle.getKey());
+			buffer.append('=');
+			buffer.append(bundle.getValue());
 		}
 		return buffer.toString();
 	}
 
-	private List<String> getDefaultParam() {
-		List<String> params = new ArrayList<>();
-		params.add("oauth_timestamp=" + new Date().getTime());
-		params.add("oauth_consumer_key=" + clientId);
-		params.add("oauth_signature_method=HMAC-SHA1");
-		params.add("oauth_version=1.0");
-		params.add("perms=delete");
+	private TreeMap<String, String> getDefaultParam() {
+		TreeMap<String, String> params = new TreeMap<>();
+		params.put("oauth_timestamp", String.valueOf(new Date().getTime()));
+		params.put("oauth_consumer_key", clientId);
+		params.put("oauth_signature_method", "HMAC-SHA1");
+		params.put("oauth_version", "1.0");
+		params.put("perms", "delete");
 		return params;
 	}
 
-	private String getSignature(String verb, String url, List<String> parameters, String secret) {
+	private String getSignature(String verb, String url, TreeMap<String, String> parameters, String secret) {
 		String params = getParamString(parameters);
 
 		String rawSignature = verb + "&" + encodeUrl(url, OAUTH) + "&" + encodeUrl(params, OAUTH);
 		String key = encodeUrl(clientSecret, OAUTH) + "&" + encodeUrl(secret, OAUTH);
 
 		try {
+			String ret = hmacSha1(rawSignature, key);
+
+			if (ret.contains("+")) {
+				/*
+				** TODO : find a more elegant solution
+				** Cannot figure the signature encoding when it contains a '+' so generate another
+				*/
+				parameters.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
+				parameters.put("oauth_timestamp", String.valueOf(new Date().getTime()));
+				return getSignature(verb, url, parameters, secret);
+			}
 			return hmacSha1(rawSignature, key);
 		} catch (Exception e) {
 			return "";
 		}
 	}
 
-	private String getNonce() {
+	private String generateNonce() {
 		return UUID.randomUUID().toString();
 	}
 
@@ -117,15 +131,16 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	private void exchangePinForTokens(String pin, final EpictureCallbackInterface callback) {
-		List<String> params = getDefaultParam();
+		TreeMap<String, String> params = getDefaultParam();
 
-		params.add("oauth_nonce=" + encodeUrl(getNonce(), REGULAR));
-		params.add("oauth_verifier=" + pin);
-		params.add("oauth_token=" + accessToken);
+		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
+		params.put("oauth_verifier", pin);
+		params.put("oauth_token", accessToken);
 
+		String signature = encodeUrl(getSignature("GET", EXCHANGE_URL, params, privateToken), REGULAR);
 		String url = EXCHANGE_URL;
 		url += "?" + getParamString(params);
-		url += "&oauth_signature=" + encodeUrl(getSignature("GET", EXCHANGE_URL, params, privateToken), REGULAR);
+		url += "&oauth_signature=" + signature;
 
 		this.getUrl(url, new JsonHttpResponseHandler() {
 			@Override
@@ -157,10 +172,8 @@ public class FlickrClient extends EpictureClientAbstract {
 		});
 	}
 
-	private void authorizeToken(Context context, final EpictureCallbackInterface callback) {
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken));
-		context.startActivity(browserIntent);
-
+	@Override
+	public void pinValidator(Context context, final EpictureCallbackInterface callback) {
 		new MaterialDialog.Builder(context)
 				.title("Enter Pin")
 				.positiveText("Validate")
@@ -176,14 +189,15 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	@Override
 	public void authorize(final Context context, final EpictureCallbackInterface callback) {
-		List<String> params = getDefaultParam();
+		TreeMap<String, String> params = getDefaultParam();
 
-		params.add("oauth_nonce=" + encodeUrl(getNonce(), REGULAR));
-		params.add("oauth_callback=oob");
+		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
+		params.put("oauth_callback", "oob");
 
+		String signature = encodeUrl(getSignature("GET", REQUEST_URL, params, ""), REGULAR);
 		String url = REQUEST_URL;
 		url += "?" + getParamString(params);
-		url += "&oauth_signature=" + encodeUrl(getSignature("GET", REQUEST_URL, params, ""), REGULAR);
+		url += "&oauth_signature=" + signature;
 
 		this.getUrl(url, new JsonHttpResponseHandler() {
 			@Override
@@ -197,7 +211,9 @@ public class FlickrClient extends EpictureClientAbstract {
 							callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError("Flickr responded oddly", "authorize")));
 						}
 					}
-					authorizeToken(context, callback);
+					Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken));
+					context.startActivity(browserIntent);
+					pinValidator(context, callback);
 				} else {
 					if (callback != null) {
 						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError(response, "authorize")));
