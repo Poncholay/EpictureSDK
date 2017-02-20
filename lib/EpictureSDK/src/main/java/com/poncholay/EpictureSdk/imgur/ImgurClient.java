@@ -82,10 +82,7 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void authorize(Context context, final EpictureCallbackInterface callback) {
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
-		context.startActivity(browserIntent);
-
+	public void pinValidator(Context context, final EpictureCallbackInterface callback) {
 		new MaterialDialog.Builder(context)
 				.title("Enter Pin")
 				.positiveText("Validate")
@@ -97,6 +94,13 @@ public class ImgurClient extends EpictureClientAbstract {
 					}
 				})
 				.show();
+	}
+
+	@Override
+	public void authorize(Context context, final EpictureCallbackInterface callback) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
+		context.startActivity(browserIntent);
+		pinValidator(context, callback);
 	}
 
 	@Override
