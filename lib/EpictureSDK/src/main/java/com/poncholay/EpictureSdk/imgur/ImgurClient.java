@@ -22,8 +22,6 @@ import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Objects;
-
 import cz.msebera.android.httpclient.Header;
 
 public class ImgurClient extends EpictureClientAbstract {
