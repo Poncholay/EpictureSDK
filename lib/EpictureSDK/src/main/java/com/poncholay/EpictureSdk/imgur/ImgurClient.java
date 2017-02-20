@@ -158,6 +158,11 @@ public class ImgurClient extends EpictureClientAbstract {
 		return refreshToken;
 	}
 
+	@Override
+	public String getServiceName() {
+		return "Imgur";
+	}
+
 	private void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 		this.setAuthorizationHeader(accessToken);

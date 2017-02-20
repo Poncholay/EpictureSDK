@@ -22,6 +22,8 @@ public abstract class EpictureClientAbstract {
 	abstract public String getAccessToken();
 	abstract public String getRefreshToken();
 
+	abstract public String getServiceName();
+
 	abstract public void authorize(Context context, EpictureCallbackInterface callback);
 	abstract public void me(EpictureCallbackInterface callback);
 	abstract public void favorite(String id, EpictureCallbackInterface callback);

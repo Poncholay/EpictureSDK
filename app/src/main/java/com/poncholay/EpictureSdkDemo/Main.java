@@ -93,8 +93,8 @@ public class Main extends Activity {
 				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder()
 						.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 						.clientId("3560cc6fe6a380b")
-						.accessToken("f6a28e028df26540d431c1659289657baa085963")
-						.refreshToken("497d08f26bafbed7a8e91bb2d862b0b89487c4d0")
+						.accessToken("86176f229710c3a32e5895a5d34354e0febe560d")
+						.refreshToken("c0ca3166d76e95d205048551ea3095933beedbb3")
 						.build();
 				doTests(client);
 			}
@@ -110,7 +110,6 @@ public class Main extends Activity {
 			}
 		}));
 	}
-
 
 	private HamButton.Builder createHamButton(int color, String text, String subText, Drawable drawable, OnBMClickListener listener) {
 		return new HamButton.Builder()

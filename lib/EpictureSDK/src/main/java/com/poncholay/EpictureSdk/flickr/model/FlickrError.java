@@ -22,7 +22,7 @@ public class FlickrError implements EpictureError {
 
 	@Override
 	public String getPrettyError() {
-		return "Flickr error : " + error;
+		return "Flickr error : (" + SDKMethod + ") " + error;
 	}
 
 	@Override

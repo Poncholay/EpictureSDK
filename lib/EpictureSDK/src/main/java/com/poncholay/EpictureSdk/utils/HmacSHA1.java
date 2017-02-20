@@ -1,9 +1,11 @@
 package com.poncholay.EpictureSdk.utils;
 
-import android.util.Base64;
+//import android.util.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import cz.msebera.android.httpclient.extras.Base64;
 
 public class HmacSHA1 {
 	public static String hmacSha1(String value, String key) {
@@ -14,7 +16,7 @@ public class HmacSHA1 {
 
 			byte[] digest = mac.doFinal(value.getBytes());
 
-			return Base64.encodeToString(digest, 0);
+			return Base64.encodeToString(digest, Base64.DEFAULT);
 		} catch (Exception e) {
 			return value;
 		}

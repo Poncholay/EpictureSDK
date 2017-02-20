@@ -29,6 +29,8 @@ import cz.msebera.android.httpclient.Header;
 import static com.poncholay.EpictureSdk.utils.HmacSHA1.hmacSha1;
 
 public class FlickrClient extends EpictureClientAbstract {
+	private static final boolean OAUTH = true;
+	private static final boolean REGULAR = false;
 	private final String AUTHORIZE_URL = "https://www.flickr.com/services/oauth/authorize";
 	private final String REQUEST_URL = "https://www.flickr.com/services/oauth/request_token";
 	private final String EXCHANGE_URL = "https://www.flickr.com/services/oauth/access_token";
@@ -47,24 +49,28 @@ public class FlickrClient extends EpictureClientAbstract {
 		setPrivateToken(refreshToken);
 	}
 
-	private String encodeUrl(String raw) {
+	private String encodeUrl(String raw, boolean strict) {
 		try {
-			return URLEncoder.encode(raw.replace("+", "%2b"), "UTF-8");
+			if (strict) {
+				return URLEncoder.encode(raw.replace("+", "%20").replace("*", "%2A").replace("%7E", "~"), "UTF-8");
+			}
+			return URLEncoder.encode(raw, "UTF-8");
 		} catch (UnsupportedEncodingException ignored) {}
 		return raw;
 	}
 
-	private String getParams(List<String> parameters) {
-		String params = "";
+
+	private String getParamString(List<String> parameters) {
+		StringBuilder buffer = new StringBuilder();
 
 		java.util.Collections.sort(parameters);
 		for (int i = 0; i < parameters.size(); i++) {
-			params += parameters.get(i);
+			buffer.append(parameters.get(i));
 			if (i + 1 < parameters.size()) {
-				params += "&";
+				buffer.append('&');
 			}
 		}
-		return params;
+		return buffer.toString();
 	}
 
 	private List<String> getDefaultParam() {
@@ -73,14 +79,15 @@ public class FlickrClient extends EpictureClientAbstract {
 		params.add("oauth_consumer_key=" + clientId);
 		params.add("oauth_signature_method=HMAC-SHA1");
 		params.add("oauth_version=1.0");
+		params.add("perms=delete");
 		return params;
 	}
 
 	private String getSignature(String verb, String url, List<String> parameters, String secret) {
-		String params = getParams(parameters);
+		String params = getParamString(parameters);
 
-		String rawSignature = verb + "&" + encodeUrl(url) + "&" + encodeUrl(params);
-		String key = clientSecret + "&" + secret;
+		String rawSignature = verb + "&" + encodeUrl(url, OAUTH) + "&" + encodeUrl(params, OAUTH);
+		String key = encodeUrl(clientSecret, OAUTH) + "&" + encodeUrl(secret, OAUTH);
 
 		try {
 			return hmacSha1(rawSignature, key);
@@ -112,10 +119,15 @@ public class FlickrClient extends EpictureClientAbstract {
 	private void exchangePinForTokens(String pin, final EpictureCallbackInterface callback) {
 		List<String> params = getDefaultParam();
 
-		params.add("oauth_nonce=" + encodeUrl(getNonce()));
+		params.add("oauth_nonce=" + encodeUrl(getNonce(), REGULAR));
 		params.add("oauth_verifier=" + pin);
 		params.add("oauth_token=" + accessToken);
-		this.getUrl(EXCHANGE_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", EXCHANGE_URL, params, privateToken)), new JsonHttpResponseHandler() {
+
+		String url = EXCHANGE_URL;
+		url += "?" + getParamString(params);
+		url += "&oauth_signature=" + encodeUrl(getSignature("GET", EXCHANGE_URL, params, privateToken), REGULAR);
+
+		this.getUrl(url, new JsonHttpResponseHandler() {
 			@Override
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here
@@ -166,9 +178,14 @@ public class FlickrClient extends EpictureClientAbstract {
 	public void authorize(final Context context, final EpictureCallbackInterface callback) {
 		List<String> params = getDefaultParam();
 
-		params.add("oauth_nonce=" + encodeUrl(getNonce()));
+		params.add("oauth_nonce=" + encodeUrl(getNonce(), REGULAR));
 		params.add("oauth_callback=oob");
-		this.getUrl(REQUEST_URL + "?" + getParams(params) + "&oauth_signature=" + encodeUrl(getSignature("GET", REQUEST_URL, params, "")), new JsonHttpResponseHandler() {
+
+		String url = REQUEST_URL;
+		url += "?" + getParamString(params);
+		url += "&oauth_signature=" + encodeUrl(getSignature("GET", REQUEST_URL, params, ""), REGULAR);
+
+		this.getUrl(url, new JsonHttpResponseHandler() {
 			@Override
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here
@@ -180,7 +197,7 @@ public class FlickrClient extends EpictureClientAbstract {
 							callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError("Flickr responded oddly", "authorize")));
 						}
 					}
-					authorizeToken(context, callback);
+//					authorizeToken(context, callback);
 				} else {
 					if (callback != null) {
 						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError(response, "authorize")));
@@ -222,6 +239,11 @@ public class FlickrClient extends EpictureClientAbstract {
 	@Override
 	public String getRefreshToken() {
 		return privateToken;
+	}
+
+	@Override
+	public String getServiceName() {
+		return "Flickr";
 	}
 
 	private void setAccessToken(String accessToken) {
