@@ -197,7 +197,7 @@ public class FlickrClient extends EpictureClientAbstract {
 							callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError("Flickr responded oddly", "authorize")));
 						}
 					}
-//					authorizeToken(context, callback);
+					authorizeToken(context, callback);
 				} else {
 					if (callback != null) {
 						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError(response, "authorize")));
