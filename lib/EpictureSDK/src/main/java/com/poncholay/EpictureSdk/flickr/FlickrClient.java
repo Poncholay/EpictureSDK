@@ -13,7 +13,6 @@ import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.model.FlickrAuthorization;
 import com.poncholay.EpictureSdk.flickr.model.FlickrError;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
-import com.poncholay.EpictureSdk.model.EpictureError;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
@@ -125,21 +124,22 @@ public class FlickrClient extends EpictureClientAbstract {
 						setAccessToken(parseResponseForParam(response, "oauth_token"));
 						setPrivateToken(parseResponseForParam(response, "oauth_token_secret"));
 
-						EpictureAuthorization data = new FlickrAuthorization();
-						data.setAccessToken(accessToken);
-						data.setRefreshToken(privateToken);
-						EpictureResponseWrapper<EpictureAuthorization> ret = new EpictureResponseWrapper<>(true, statusCode, data);
-						callback.success(ret);
-
+						if (callback != null) {
+							EpictureAuthorization data = new FlickrAuthorization();
+							data.setAccessToken(accessToken);
+							data.setRefreshToken(privateToken);
+							EpictureResponseWrapper<EpictureAuthorization> ret = new EpictureResponseWrapper<>(true, statusCode, data);
+							callback.success(ret);
+						}
 						return;
 					}
-					EpictureError data = new FlickrError();
-					data.setError("Flickr responded oddly");
-					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
-				} else {
-					EpictureError data = new FlickrError();
-					data.setError(response);
-					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
+				}
+				if (callback != null) {
+					if (statusCode == 200) {
+						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError("Flickr responded oddly", "authorize")));
+					} else {
+						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError(response, "authorize")));
+					}
 				}
 			}
 		});
@@ -176,15 +176,15 @@ public class FlickrClient extends EpictureClientAbstract {
 					accessToken = parseResponseForParam(response, "oauth_token");
 					privateToken = parseResponseForParam(response, "oauth_token_secret");
 					if (accessToken == null || privateToken == null) {
-						EpictureError data = new FlickrError();
-						data.setError("Flickr responded oddly");
-						callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
+						if (callback != null) {
+							callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError("Flickr responded oddly", "authorize")));
+						}
 					}
 					authorizeToken(context, callback);
 				} else {
-					EpictureError data = new FlickrError();
-					data.setError(response);
-					callback.error(new EpictureResponseWrapper<>(true, statusCode, data));
+					if (callback != null) {
+						callback.error(new EpictureResponseWrapper<>(false, statusCode, new FlickrError(response, "authorize")));
+					}
 				}
 			}
 		});
@@ -192,7 +192,16 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	@Override
 	public void me(EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "me")));
+		}
+	}
 
+	@Override
+	public void favorite(String id, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "favorite")));
+		}
 	}
 
 	@Override

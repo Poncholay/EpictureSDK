@@ -7,10 +7,24 @@ public class ImgurError implements EpictureError {
 	private String error;
 	private String request;
 	private String method;
+	private String SDKMethod;
+
+	public ImgurError() {
+		this("", "");
+	}
+
+	public ImgurError(String error) {
+		this(error, "");
+	}
+
+	public ImgurError(String error, String SDKMethod) {
+		this.error = error;
+		this.SDKMethod = SDKMethod;
+	}
 
 	@Override
 	public String getPrettyError() {
-		return "Error : (" + method + ") " + request + " : " + error;
+		return "Imgur error : (" + method + ") " + request + " : " + error;
 	}
 
 	@Override
@@ -21,6 +35,16 @@ public class ImgurError implements EpictureError {
 	@Override
 	public void setError(String error) {
 		this.error = error;
+	}
+
+	@Override
+	public String getSDKMethod() {
+		return SDKMethod;
+	}
+
+	@Override
+	public void setSDKMethod(String SDKMethod) {
+		this.SDKMethod = SDKMethod;
 	}
 
 	public String getRequest() {
