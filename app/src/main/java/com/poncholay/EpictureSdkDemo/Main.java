@@ -133,6 +133,7 @@ public class Main extends Activity {
 		doFavoriteImage(client);
 		doGetImage(client);
 		doGetImages(client);
+		doUploadImage(client);
 	}
 
 	private void printError(EpictureResponseWrapper<EpictureError> error) {
@@ -224,6 +225,25 @@ public class Main extends Activity {
 		client.getImages("706f696e7477686f7265", 1, callback);
 	}
 
+	private void doUploadImage(final EpictureClientAbstract client) {
+		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
+			@Override
+			public void success(EpictureResponseWrapper<EpicturePicture> response) {
+				mAdapter.add("Url : " + response.data.getUrl());
+				mAdapter.add("Thumbnail : " + response.data.getThumbnail());
+				Log.d(TAG, "Url : " + response.data.getUrl());
+				Log.d(TAG, "Thumbnail : " + response.data.getThumbnail());
+			}
+
+			@Override
+			public void error(EpictureResponseWrapper<EpictureError> error) {
+				printError(error);
+			}
+		};
+		client.uploadImage("nopeFail", callback);
+		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", callback);
+	}
+
 	private void doMe(final EpictureClientAbstract client) {
 		client.me(new EpictureCallbackInterface<EpictureUser>() {
 			@Override
@@ -242,7 +262,7 @@ public class Main extends Activity {
 
 //	Flickr and Imgur API implementation
 //		OK • Connecting to the Flickr and Imgur platforms
-//		   • The photo display put online by the user connected to Flickr and Imgur
+//		OK • The photo display put online by the user connected to Flickr and Imgur
 //		   • Flickr and Imgur photo finder
 //		   • Uploading photos to Flickr and Imgur
 //		   • Adding/deleting photos to/from your favorites

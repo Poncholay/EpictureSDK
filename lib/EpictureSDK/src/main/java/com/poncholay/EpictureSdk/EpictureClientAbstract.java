@@ -28,7 +28,9 @@ public abstract class EpictureClientAbstract {
 	abstract public void pinValidator(Context context, EpictureCallbackInterface callback);
 
 	abstract public void authorize(Context context, EpictureCallbackInterface callback);
+
 	abstract public void me(EpictureCallbackInterface callback);
+
 	abstract public void favoriteImage(String id, EpictureCallbackInterface callback);
 
 	abstract public void getImages(EpictureCallbackInterface callback);
@@ -37,6 +39,9 @@ public abstract class EpictureClientAbstract {
 	abstract public void getImages(String username, int page, EpictureCallbackInterface callback);
 
 	abstract public void getImage(String id, EpictureCallbackInterface callback);
+
+	abstract public void uploadImage(String path, EpictureCallbackInterface callback);
+	abstract public void uploadImage(String path, String album, String name, String title, String description, EpictureCallbackInterface callback);
 
 	protected void setAuthorizationHeader(String accessToken) {
 		client.removeHeader("Authorization:");

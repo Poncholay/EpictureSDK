@@ -241,35 +241,48 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void getImage(String id, EpictureCallbackInterface callback) {
+	public void getImage(String id, final EpictureCallbackInterface callback) {
 		if (callback != null) {
 			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
 		}
 	}
 
 	@Override
-	public void getImages(EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
-		}
+	public void getImages(final EpictureCallbackInterface callback) {
+		getImages(0, callback);
 	}
 
 	@Override
-	public void getImages(String username, EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+	public void getImages(String username, final EpictureCallbackInterface callback) {
+		if (username == null) {
+			getImages(0, callback);
+			return;
 		}
+		getImages(username, 0, callback);
 	}
 
 	@Override
 	public void getImages(int page, EpictureCallbackInterface callback) {
+		String username = null;
+		getImages(username, page, callback);
+	}
+
+	@Override
+	public void getImages(String username, int page, EpictureCallbackInterface callback) {
 		if (callback != null) {
 			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
 		}
 	}
 
 	@Override
-	public void getImages(String username, int page, EpictureCallbackInterface callback) {
+	public void uploadImage(String path, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+		}
+	}
+
+	@Override
+	public void uploadImage(String path, String album, String name, String title, String description, EpictureCallbackInterface callback) {
 		if (callback != null) {
 			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
 		}

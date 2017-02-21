@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.loopj.android.http.Base64;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
@@ -23,7 +25,15 @@ import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import cz.msebera.android.httpclient.Header;
+
+import static com.poncholay.EpictureSdk.R.id.image;
 
 public class ImgurClient extends EpictureClientAbstract {
 
@@ -110,6 +120,9 @@ public class ImgurClient extends EpictureClientAbstract {
 
 	@Override
 	public void authorize(Context context, final EpictureCallbackInterface callback) {
+		if (context == null) {
+			return;
+		}
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + clientId));
 		context.startActivity(browserIntent);
 		pinValidator(context, callback);
@@ -252,6 +265,80 @@ public class ImgurClient extends EpictureClientAbstract {
 				}
 			}
 		});
+	}
+
+//	image	required	A binary file, base64 data, or a URL for an image. (up to 10MB)
+//	album	optional	The id of the album you want to add the image to. For anonymous albums, {album} should be the deletehash that is returned at creation.
+//	type	optional	The type of the file that's being sent; file, base64 or URL
+//	name	optional	The name of the file, this is automatically detected if uploading a file with a POST and multipart / form-data
+//	title	optional	The title of the image.
+//	description	optional	The description of the image.
+
+	@Override
+	public void uploadImage(String path, final EpictureCallbackInterface callback) {
+		uploadImage(path, null, null, null, null, callback);
+	}
+
+	@Override
+	public void uploadImage(String path, String album, String name, String title, String description, final EpictureCallbackInterface callback) {
+		byte[] image = loadBinaryFile(path);
+		if (image == null) {
+			callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("The image does not exist", "getImage")));
+			return;
+		}
+
+		RequestParams params = new RequestParams();
+		params.add("image", Base64.encodeToString(image, Base64.DEFAULT));
+		params.add("album", album);
+		params.add("type", "base64");
+		params.add("name", name);
+		params.add("title", title);
+		params.add("description", description);
+		this.post("/image", params, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+				if (callback != null) {
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImage")));
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+				if (callback != null) {
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImage")));
+					}
+				}
+			}
+		});
+	}
+
+	private byte[] loadBinaryFile(String image) {
+		DataInputStream dis = null;
+		try {
+			File file = new File(image);
+			if (!file.exists()) {
+				return null;
+			}
+			byte[] fileData = new byte[(int) file.length()];
+			dis = new DataInputStream(new FileInputStream(file));
+			dis.readFully(fileData);
+			return fileData;
+		} catch (Exception e) {
+			return null;
+		} finally {
+			try {
+				if (dis != null) {
+					dis.close();
+				}
+			} catch (Exception ignored) {}
+		}
 	}
 
 	public String getClientId() {
