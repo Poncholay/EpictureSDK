@@ -25,9 +25,11 @@ import com.poncholay.EpictureSdk.model.EpictureError;
 import com.poncholay.EpictureSdk.model.EpicturePicture;
 import com.poncholay.EpictureSdk.model.EpictureUser;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseArrayWrapper;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends Activity {
 
@@ -130,6 +132,12 @@ public class Main extends Activity {
 		doMe(client);
 		doFavoriteImage(client);
 		doGetImage(client);
+		doGetImages(client);
+	}
+
+	private void printError(EpictureResponseWrapper<EpictureError> error) {
+		mAdapter.add(error.data.getPrettyError());
+		Log.d(TAG, error.data.getPrettyError());
 	}
 
 	private void doAuthorize(final EpictureClientAbstract client) {
@@ -145,14 +153,13 @@ public class Main extends Activity {
 
 			@Override
 			public void error(EpictureResponseWrapper<EpictureError> error) {
-				mAdapter.add(error.data.getPrettyError());
-				Log.d(TAG, error.data.getPrettyError());
+				printError(error);
 			}
 		});
 	}
 
 	private void doFavoriteImage(final EpictureClientAbstract client) {
-		client.favoriteImage("Uo6bfo4", new EpictureCallbackInterface<Boolean>() {
+		EpictureCallbackInterface<Boolean> callback = new EpictureCallbackInterface<Boolean>() {
 			@Override
 			public void success(EpictureResponseWrapper<Boolean> response) {
 				mAdapter.add("Favorited : " + response.data);
@@ -161,14 +168,16 @@ public class Main extends Activity {
 
 			@Override
 			public void error(EpictureResponseWrapper<EpictureError> error) {
-				mAdapter.add(error.data.getPrettyError());
-				Log.d(TAG, error.data.getPrettyError());
+				printError(error);
 			}
-		});
+		};
+		client.favoriteImage("Uo6bfo4", callback);
+		client.favoriteImage(null, callback);
+		client.favoriteImage("nopeFail", callback);
 	}
 
 	private void doGetImage(final EpictureClientAbstract client) {
-		client.getImage("Uo6bfo4", new EpictureCallbackInterface<EpicturePicture>() {
+		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
 			@Override
 			public void success(EpictureResponseWrapper<EpicturePicture> response) {
 				mAdapter.add("Url : " + response.data.getUrl());
@@ -179,10 +188,40 @@ public class Main extends Activity {
 
 			@Override
 			public void error(EpictureResponseWrapper<EpictureError> error) {
-				mAdapter.add(error.data.getPrettyError());
-				Log.d(TAG, error.data.getPrettyError());
+				printError(error);
 			}
-		});
+		};
+		client.getImage("Uo6bfo4", callback);
+		client.getImage(null, callback);
+		client.getImage("nopeFail", callback);
+	}
+
+	private void doGetImages(final EpictureClientAbstract client) {
+		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
+			@Override
+			public void success(EpictureResponseArrayWrapper<EpicturePicture> response) {
+				List<EpicturePicture> pictures = response.data;
+
+				for (EpicturePicture picture : pictures) {
+					mAdapter.add("Url : " + picture.getUrl());
+					mAdapter.add("Thumbnail : " + picture.getThumbnail());
+					Log.d(TAG, "Url : " + picture.getUrl());
+					Log.d(TAG, "Thumbnail : " + picture.getThumbnail());
+				}
+			}
+
+			@Override
+			public void error(EpictureResponseWrapper<EpictureError> error) {
+				printError(error);
+			}
+		};
+		client.getImages(callback);
+		client.getImages(0, callback);
+		client.getImages(1, callback);
+		client.getImages("706f696e7477686f7265", callback);
+		client.getImages(null, callback);
+		client.getImages("706f696e7477686f7265", 0, callback);
+		client.getImages("706f696e7477686f7265", 1, callback);
 	}
 
 	private void doMe(final EpictureClientAbstract client) {
@@ -195,8 +234,7 @@ public class Main extends Activity {
 
 			@Override
 			public void error(EpictureResponseWrapper<EpictureError> error) {
-				mAdapter.add(error.data.getPrettyError());
-				Log.d(TAG, error.data.getPrettyError());
+				printError(error);
 			}
 		});
 	}

@@ -21,6 +21,16 @@ public class ImgurUser implements EpictureUser {
 		this.id = id;
 	}
 
+	@Override
+	public String getUsername() {
+		return getUrl();
+	}
+
+	@Override
+	public void setUsername(String username) {
+		this.url = username;
+	}
+
 	public String getUrl() {
 		return url;
 	}

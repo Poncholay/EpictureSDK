@@ -21,6 +21,7 @@ public abstract class EpictureClientAbstract {
 	abstract public String getClientSecret();
 	abstract public String getAccessToken();
 	abstract public String getRefreshToken();
+	abstract public String getUsername();
 
 	abstract public String getServiceName();
 
@@ -29,6 +30,12 @@ public abstract class EpictureClientAbstract {
 	abstract public void authorize(Context context, EpictureCallbackInterface callback);
 	abstract public void me(EpictureCallbackInterface callback);
 	abstract public void favoriteImage(String id, EpictureCallbackInterface callback);
+
+	abstract public void getImages(EpictureCallbackInterface callback);
+	abstract public void getImages(String username, EpictureCallbackInterface callback);
+	abstract public void getImages(int page, EpictureCallbackInterface callback);
+	abstract public void getImages(String username, int page, EpictureCallbackInterface callback);
+
 	abstract public void getImage(String id, EpictureCallbackInterface callback);
 
 	protected void setAuthorizationHeader(String accessToken) {

@@ -1,17 +1,14 @@
 package com.poncholay.EpictureSdk.model.response;
 
-public class EpictureResponseWrapper<T> {
+public class EpictureResponseWrapper<T> extends EpictureResponse {
 	public T data;
-	public boolean success;
-	public int status;
 
 	public EpictureResponseWrapper() {
 		this(false, 0, null);
 	}
 
 	public EpictureResponseWrapper(boolean success, int status, T data) {
-		this.success = success;
-		this.status = status;
+		super(success, status);
 		this.data = data;
 	}
 }

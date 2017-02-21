@@ -1,6 +1,7 @@
 package com.poncholay.EpictureSdk.imgur.model;
 
 import com.poncholay.EpictureSdk.model.EpicturePicture;
+import com.poncholay.EpictureSdk.model.response.EpictureResponseArrayWrapper;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
 public class ImgurPicture implements EpicturePicture {
@@ -56,4 +57,5 @@ public class ImgurPicture implements EpicturePicture {
 	}
 
 	public class ImgurPictureWrapperEpicture extends EpictureResponseWrapper<ImgurPicture> {}
+	public class ImgurPictureArrayWrapperEpicture extends EpictureResponseArrayWrapper<ImgurPicture> {}
 }

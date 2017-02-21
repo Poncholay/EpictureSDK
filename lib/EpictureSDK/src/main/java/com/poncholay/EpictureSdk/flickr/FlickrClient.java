@@ -38,6 +38,7 @@ public class FlickrClient extends EpictureClientAbstract {
 	private final String clientSecret;
 	private String accessToken;
 	private String privateToken;
+	private String username;
 	private Gson gson;
 
 	private FlickrClient(String clientPublic, String clientSecret, String accessToken, String refreshToken) {
@@ -45,6 +46,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		this.clientId = clientPublic;
 		this.clientSecret = clientSecret;
 		this.gson = new GsonBuilder().create();
+		this.username = null;
 		setAccessToken(accessToken);
 		setPrivateToken(refreshToken);
 	}
@@ -150,6 +152,7 @@ public class FlickrClient extends EpictureClientAbstract {
 					if (parseResponseForParam(response, "oauth_token") != null && parseResponseForParam(response, "oauth_token_secret") != null) {
 						setAccessToken(parseResponseForParam(response, "oauth_token"));
 						setPrivateToken(parseResponseForParam(response, "oauth_token_secret"));
+						setUsername(parseResponseForParam(response, "username"));
 
 						if (callback != null) {
 							EpictureAuthorization data = new FlickrAuthorization();
@@ -245,6 +248,34 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
+	public void getImages(EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+		}
+	}
+
+	@Override
+	public void getImages(String username, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+		}
+	}
+
+	@Override
+	public void getImages(int page, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+		}
+	}
+
+	@Override
+	public void getImages(String username, int page, EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+		}
+	}
+
+	@Override
 	public String getClientId() {
 		return clientId;
 	}
@@ -265,6 +296,11 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
+	public String getUsername() {
+		return username;
+	}
+
+	@Override
 	public String getServiceName() {
 		return "Flickr";
 	}
@@ -275,6 +311,10 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	private void setPrivateToken(String privateToken) {
 		this.privateToken = privateToken;
+	}
+
+	private void setUsername(String username) {
+		this.username = username;
 	}
 
 	public static class FlickrClientBuilder {
