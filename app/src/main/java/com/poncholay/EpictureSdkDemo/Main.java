@@ -133,7 +133,7 @@ public class Main extends Activity {
 		doFavoriteImage(client);
 		doGetImage(client);
 		doGetImages(client);
-		doUploadImage(client);
+//		doUploadImage(client);
 	}
 
 	private void printError(EpictureResponseWrapper<EpictureError> error) {
@@ -242,6 +242,7 @@ public class Main extends Activity {
 		};
 		client.uploadImage("nopeFail", callback);
 		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", callback);
+		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", null, "Test", "Test api", "Test api", callback);
 	}
 
 	private void doMe(final EpictureClientAbstract client) {
@@ -261,9 +262,9 @@ public class Main extends Activity {
 }
 
 //	Flickr and Imgur API implementation
-//		OK • Connecting to the Flickr and Imgur platforms
-//		OK • The photo display put online by the user connected to Flickr and Imgur
-//		   • Flickr and Imgur photo finder
-//		   • Uploading photos to Flickr and Imgur
-//		   • Adding/deleting photos to/from your favorites
-//		   • Managing photo display filters
+//		OK 		• Connecting to the Flickr and Imgur platforms
+//		IM 		• The photo display put online by the user connected to Flickr and Imgur
+//		   		• Flickr and Imgur photo finder
+//		IM 		• Uploading photos to Flickr and Imgur
+//		IM 		• Adding/deleting photos to/from your favorites
+//		   		• Managing photo display filters

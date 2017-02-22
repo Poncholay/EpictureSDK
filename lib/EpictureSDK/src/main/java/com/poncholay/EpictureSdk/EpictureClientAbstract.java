@@ -32,6 +32,7 @@ public abstract class EpictureClientAbstract {
 	abstract public void me(EpictureCallbackInterface callback);
 
 	abstract public void favoriteImage(String id, EpictureCallbackInterface callback);
+	abstract public void unfavoriteImage(String id, EpictureCallbackInterface callback);
 
 	abstract public void getImages(EpictureCallbackInterface callback);
 	abstract public void getImages(String username, EpictureCallbackInterface callback);

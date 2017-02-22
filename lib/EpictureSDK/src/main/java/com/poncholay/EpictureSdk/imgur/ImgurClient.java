@@ -155,13 +155,20 @@ public class ImgurClient extends EpictureClientAbstract {
 		});
 	}
 
-	@Override
-	public void favoriteImage(String id, final EpictureCallbackInterface callback) {
+	private void callFavorite(final String id, final EpictureCallbackInterface callback, final boolean result) {
 		this.post("image/" + id + "/favorite", new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
 				if (callback != null) {
-					callback.success(new EpictureResponseWrapper<>(true, statusCode, true));
+					try {
+						if (response.getString("data").equals("favorited") == result) {
+							callback.success(new EpictureResponseWrapper<>(true, statusCode, result));
+						} else {
+							callFavorite(id, callback, result);
+						}
+					} catch (JSONException ignored) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "favoriteImage")));
+					}
 				}
 			}
 
@@ -176,6 +183,16 @@ public class ImgurClient extends EpictureClientAbstract {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void unfavoriteImage(String id, final EpictureCallbackInterface callback) {
+		callFavorite(id, callback, false);
+	}
+
+	@Override
+	public void favoriteImage(String id, final EpictureCallbackInterface callback) {
+		callFavorite(id, callback, true);
 	}
 
 	@Override
@@ -266,13 +283,6 @@ public class ImgurClient extends EpictureClientAbstract {
 			}
 		});
 	}
-
-//	image	required	A binary file, base64 data, or a URL for an image. (up to 10MB)
-//	album	optional	The id of the album you want to add the image to. For anonymous albums, {album} should be the deletehash that is returned at creation.
-//	type	optional	The type of the file that's being sent; file, base64 or URL
-//	name	optional	The name of the file, this is automatically detected if uploading a file with a POST and multipart / form-data
-//	title	optional	The title of the image.
-//	description	optional	The description of the image.
 
 	@Override
 	public void uploadImage(String path, final EpictureCallbackInterface callback) {
