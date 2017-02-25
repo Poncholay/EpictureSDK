@@ -277,21 +277,33 @@ public class FlickrClient extends EpictureClientAbstract {
 	@Override
 	public void getImages(String username, int page, EpictureCallbackInterface callback) {
 		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImages")));
+		}
+	}
+
+	@Override
+	public void searchImages(String search, EpictureCallbackInterface callback) {
+		searchImages(search, 0, callback);
+	}
+
+	@Override
+	public void searchImages(String search, int page, final EpictureCallbackInterface callback) {
+		if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "searchImage")));
 		}
 	}
 
 	@Override
 	public void uploadImage(String path, EpictureCallbackInterface callback) {
 		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "uploadImage")));
 		}
 	}
 
 	@Override
 	public void uploadImage(String path, String album, String name, String title, String description, EpictureCallbackInterface callback) {
 		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "uploadImage")));
 		}
 	}
 

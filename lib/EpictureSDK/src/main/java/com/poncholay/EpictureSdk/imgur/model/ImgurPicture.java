@@ -20,12 +20,12 @@ public class ImgurPicture implements EpicturePicture {
 		if (parts.length < 2) {
 			return getUrl();
 		}
-		String url = "";
+		StringBuilder url = new StringBuilder();
 		for (int i = 0; i < parts.length; i++) {
-			url += i == parts.length - 2 ? (parts[i] + "t") : parts[i];
-			url += i == parts.length - 1 ? "" : ".";
+			url.append(i == parts.length - 2 ? (parts[i] + "t") : parts[i]);
+			url.append(i + 1 == parts.length ? "" : ".");
 		}
-		return url;
+		return url.toString();
 	}
 
 	@Override

@@ -39,7 +39,11 @@ public abstract class EpictureClientAbstract {
 	abstract public void getImages(int page, EpictureCallbackInterface callback);
 	abstract public void getImages(String username, int page, EpictureCallbackInterface callback);
 
+	abstract public void searchImages(String search, EpictureCallbackInterface callback);
+	abstract public void searchImages(String search, int page, EpictureCallbackInterface callback);
+
 	abstract public void getImage(String id, EpictureCallbackInterface callback);
+
 
 	abstract public void uploadImage(String path, EpictureCallbackInterface callback);
 	abstract public void uploadImage(String path, String album, String name, String title, String description, EpictureCallbackInterface callback);

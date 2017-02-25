@@ -186,22 +186,22 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void unfavoriteImage(String id, final EpictureCallbackInterface callback) {
+	public void unfavoriteImage(String id, EpictureCallbackInterface callback) {
 		callFavorite(id, callback, false);
 	}
 
 	@Override
-	public void favoriteImage(String id, final EpictureCallbackInterface callback) {
+	public void favoriteImage(String id, EpictureCallbackInterface callback) {
 		callFavorite(id, callback, true);
 	}
 
 	@Override
-	public void getImages(final EpictureCallbackInterface callback) {
+	public void getImages(EpictureCallbackInterface callback) {
 		getImages(0, callback);
 	}
 
 	@Override
-	public void getImages(String username, final EpictureCallbackInterface callback) {
+	public void getImages(String username, EpictureCallbackInterface callback) {
 		if (username == null) {
 			getImages(0, callback);
 			return;
@@ -251,6 +251,63 @@ public class ImgurClient extends EpictureClientAbstract {
 						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
 					} catch (Exception e) {
 						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImages")));
+					}
+				}
+			}
+		});
+	}
+
+	private String buildSearchQuery(String search, String operator) {
+		StringBuilder query = new StringBuilder();
+		String[] params = search.split(" ");
+//		query.append("q=title: ");
+		query.append("q_any=");
+		boolean first = true;
+		for (String param : params) {
+			if (!first) {
+//				query.append(" " + operator + " ");
+				query.append(" ");
+			} else {
+				first = false;
+			}
+			query.append(param);
+		}
+		query.append("&q_type=png");
+		Log.d("QUERY", query.toString());
+		return query.toString();
+	}
+
+	@Override
+	public void searchImages(String search, EpictureCallbackInterface callback) {
+		searchImages(search, 0, callback);
+	}
+
+	@Override
+	public void searchImages(String search, int page, final EpictureCallbackInterface callback) {
+		if (search == null || search == "") {
+			return;
+		}
+		String query = buildSearchQuery(search, "OR");
+		this.get("/gallery/search/time/" + page + "?" + query, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+				if (callback != null) {
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureArrayWrapperEpicture.class));
+					} catch (Exception e) {
+						e.printStackTrace();
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "searchImages")));
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+				if (callback != null) {
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "searchImages")));
 					}
 				}
 			}

@@ -17,6 +17,8 @@ import com.nightonke.boommenu.BoomMenuButton;
 import com.nightonke.boommenu.ButtonEnum;
 import com.nightonke.boommenu.Piece.PiecePlaceEnum;
 import com.nightonke.boommenu.Util;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.FlickrClient;
 import com.poncholay.EpictureSdk.imgur.ImgurClient;
@@ -35,7 +37,7 @@ public class Main extends Activity {
 
 	private static final String TAG = "Main";
 
-	private ArrayAdapter<String> mAdapter;
+	private ResponseAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle ignored) {
@@ -44,10 +46,13 @@ public class Main extends Activity {
 		setContentView(R.layout.sample_view);
 
 		ListView mListView = (ListView) findViewById(R.id.list_view);
-		mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+		mAdapter = new ResponseAdapter(this, new ArrayList<String>());
 		mListView.setAdapter(mAdapter);
 
 		createBoomMenu();
+		if (!ImageLoader.getInstance().isInited()) {
+			ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(this));
+		}
 	}
 
 	private void createBoomMenu() {
@@ -95,8 +100,8 @@ public class Main extends Activity {
 				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder()
 						.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 						.clientId("3560cc6fe6a380b")
-						.accessToken("d742b4041b4fa59039b9d651587d009e8eaca2e4")
-						.refreshToken("56c8ef00bc5185969d62b4f3f222903e8764ed08")
+						.accessToken("ff3aed3c0550d22a88d9b260878dfda24454efd6")
+						.refreshToken("ed4a601df2db19211ab91a3386514595ff957e9c")
 						.build();
 				doTests(client);
 			}
@@ -133,6 +138,7 @@ public class Main extends Activity {
 		doFavoriteImage(client);
 		doGetImage(client);
 		doGetImages(client);
+//		doSearchImages(client);
 //		doUploadImage(client);
 	}
 
@@ -203,6 +209,10 @@ public class Main extends Activity {
 			public void success(EpictureResponseArrayWrapper<EpicturePicture> response) {
 				List<EpicturePicture> pictures = response.data;
 
+				if (pictures.size() == 0) {
+					mAdapter.add("No results");
+					Log.d(TAG, "No results");
+				}
 				for (EpicturePicture picture : pictures) {
 					mAdapter.add("Url : " + picture.getUrl());
 					mAdapter.add("Thumbnail : " + picture.getThumbnail());
@@ -223,6 +233,34 @@ public class Main extends Activity {
 		client.getImages(null, callback);
 		client.getImages("706f696e7477686f7265", 0, callback);
 		client.getImages("706f696e7477686f7265", 1, callback);
+	}
+
+	private void doSearchImages(final EpictureClientAbstract client) {
+		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
+			@Override
+			public void success(EpictureResponseArrayWrapper<EpicturePicture> response) {
+				List<EpicturePicture> pictures = response.data;
+
+				if (pictures.size() == 0) {
+					mAdapter.add("No results");
+					Log.d(TAG, "No results");
+				}
+				for (EpicturePicture picture : pictures) {
+					mAdapter.add("Url : " + picture.getUrl());
+					mAdapter.add("Thumbnail : " + picture.getThumbnail());
+					Log.d(TAG, "Url : " + picture.getUrl());
+					Log.d(TAG, "Thumbnail : " + picture.getThumbnail());
+				}
+			}
+
+			@Override
+			public void error(EpictureResponseWrapper<EpictureError> error) {
+				printError(error);
+			}
+		};
+		client.searchImages("MilcenSlip", callback);
+		client.searchImages("Nyan cat", 0, callback);
+		client.searchImages("", 2, callback);
 	}
 
 	private void doUploadImage(final EpictureClientAbstract client) {
@@ -264,7 +302,7 @@ public class Main extends Activity {
 //	Flickr and Imgur API implementation
 //		OK 		• Connecting to the Flickr and Imgur platforms
 //		IM 		• The photo display put online by the user connected to Flickr and Imgur
-//		   		• Flickr and Imgur photo finder
+//		IM 		• Flickr and Imgur photo finder
 //		IM 		• Uploading photos to Flickr and Imgur
 //		IM 		• Adding/deleting photos to/from your favorites
 //		   		• Managing photo display filters
