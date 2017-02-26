@@ -19,6 +19,7 @@ import com.poncholay.EpictureSdk.model.EpictureAuthorization;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -287,10 +288,52 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	@Override
-	public void getImage(String id, final EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImage")));
-		}
+	public void getImage(final String id, final EpictureCallbackInterface callback) {
+		TreeMap<String, String> params = getDefaultAuthParam();
+
+		params.put("api_key", clientId);
+		params.put("photo_id", id);
+		params.put("format", "json");
+		params.put("method", "flickr.photos.getSizes");
+
+		String signature = encodeUrl(getSignature("GET", getBaseUrl(), params, privateToken), REGULAR);
+		String url = "?" + getParamString(params);
+		url += "&oauth_signature=" + signature;
+
+		get(url, new JsonHttpResponseHandler() {
+			@Override
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				try {
+					if (statusCode == 200) {
+						JSONObject resp = extractJSON(response);
+						if (handleResponseError(resp, callback)) {
+							JSONObject data = new JSONObject();
+							JSONObject image = new JSONObject();
+							image.put("title", id.toString());
+							image.put("id", id);
+							image.put("url_o", "");
+							image.put("url_o", "");
+							JSONArray sizes = resp.getJSONObject("sizes").getJSONArray("size");
+							for (int i = 0; i < sizes.length(); i++) {
+								if (((JSONObject)(sizes.get(i))).get("label").equals("Original")) {
+									image.put("url_o", ((JSONObject)(sizes.get(i))).get("source"));
+								}
+								if (((JSONObject)(sizes.get(i))).get("label").equals("Small")) {
+									image.put("url_m", ((JSONObject)(sizes.get(i))).get("source"));
+								}
+							}
+							data.put("data", image);
+							data.put("status", 200);
+							data.put("success", true);
+							callback.success(gson.fromJson(data.toString(), FlickrPicture.FlickrPictureWrapperEpicture.class));
+						}
+					}
+				} catch (Exception e) {
+					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImages")));
+				}
+			}
+		});
 	}
 
 	@Override
@@ -350,7 +393,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		params.put("api_key", clientId);
 		params.put("user_id", userId);
 		params.put("page", String.valueOf(page));
-		params.put("extras", "url_o,url_t");
+		params.put("extras", "url_o,url_m");
 		params.put("format", "json");
 		params.put("method", "flickr.people.getPhotos");
 
@@ -368,6 +411,8 @@ public class FlickrClient extends EpictureClientAbstract {
 						if (handleResponseError(resp, callback)) {
 							JSONObject data = new JSONObject();
 							data.put("data", resp.getJSONObject("photos").getJSONArray("photo"));
+							data.put("success", true);
+							data.put("status", 200);
 							callback.success(gson.fromJson(data.toString(), FlickrPicture.FlickrPictureArrayWrapperEpicture.class));
 						}
 					}

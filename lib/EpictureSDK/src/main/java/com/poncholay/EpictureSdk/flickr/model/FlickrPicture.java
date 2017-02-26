@@ -8,7 +8,7 @@ public class FlickrPicture implements EpicturePicture {
 	private String id;
 	private String title;
 	private String url_o;
-	private String url_t;
+	private String url_m;
 
 	@Override
 	public String getUrl() {
@@ -17,7 +17,7 @@ public class FlickrPicture implements EpicturePicture {
 
 	@Override
 	public String getThumbnail() {
-		return getUrl_t();
+		return getUrl_m();
 	}
 
 	@Override
@@ -48,12 +48,12 @@ public class FlickrPicture implements EpicturePicture {
 		this.url_o = url_o;
 	}
 
-	public String getUrl_t() {
-		return url_t;
+	public String getUrl_m() {
+		return url_m;
 	}
 
-	public void setUrl_t(String url_t) {
-		this.url_t = url_t;
+	public void setUrl_m(String url_m) {
+		this.url_m = url_m;
 	}
 
 	public class FlickrPictureWrapperEpicture extends EpictureResponseWrapper<FlickrPicture> {}

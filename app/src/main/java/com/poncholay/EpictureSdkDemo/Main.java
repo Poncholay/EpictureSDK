@@ -135,10 +135,10 @@ public class Main extends Activity {
 		mAdapter.add("ClientId : " + client.getClientId());
 		mAdapter.add("ClientSecret : " + client.getClientSecret());
 		mAdapter.add("Username : " + client.getUsername());
-//		doFavoriteImage(client);
-//		doGetImage(client);
+		doFavoriteImage(client);
+		doGetImage(client);
 		doGetImages(client);
-//		doSearchImages(client);
+		doSearchImages(client);
 //		doUploadImage(client);
 	}
 
@@ -202,6 +202,7 @@ public class Main extends Activity {
 			}
 		};
 		client.getImage("Uo6bfo4", callback);
+		client.getImage("32742182460", callback);
 		client.getImage(null, callback);
 		client.getImage("nopeFail", callback);
 	}
