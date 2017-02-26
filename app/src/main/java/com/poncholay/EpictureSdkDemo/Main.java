@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.nightonke.boommenu.BoomButtons.ButtonPlaceEnum;
@@ -25,7 +24,6 @@ import com.poncholay.EpictureSdk.imgur.ImgurClient;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
 import com.poncholay.EpictureSdk.model.EpictureError;
 import com.poncholay.EpictureSdk.model.EpicturePicture;
-import com.poncholay.EpictureSdk.model.EpictureUser;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseArrayWrapper;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
@@ -65,6 +63,8 @@ public class Main extends Activity {
 		Drawable imgur = ContextCompat.getDrawable(this, R.drawable.imgur);
 		Drawable flickr = ContextCompat.getDrawable(this, R.drawable.flickr);
 
+		final Activity activity = this;
+
 		bmb.addBuilder(createHamButton(ColorUtils.darken(Color.GRAY), "Clear", "Remove log message", clear, new OnBMClickListener() {
 			@Override
 			public void onBoomButtonClick(int index) {
@@ -75,11 +75,9 @@ public class Main extends Activity {
 		bmb.addBuilder(createHamButton(ColorUtils.darken(Color.RED), "Test Flickr", "Without authorization", flickr, new OnBMClickListener() {
 			@Override
 			public void onBoomButtonClick(int index) {
-				EpictureClientAbstract client = new FlickrClient.FlickrClientBuilder()
+				EpictureClientAbstract client = new FlickrClient.FlickrClientBuilder(activity)
 						.clientSecret("80861547e3099611")
 						.clientId("e00ba2ba9f093e1b4d777d24fd3c2d9f")
-						.accessToken("72157676863555643-77d003c2604a4e58")
-						.refreshToken("1bc9e607599835d0")
 						.build();
 				doTests(client);
 			}
@@ -87,7 +85,7 @@ public class Main extends Activity {
 		bmb.addBuilder(createHamButton(ColorUtils.darken(Color.RED), "Test Flickr", "With authorization", flickr, new OnBMClickListener() {
 			@Override
 			public void onBoomButtonClick(int index) {
-				EpictureClientAbstract client = new FlickrClient.FlickrClientBuilder()
+				EpictureClientAbstract client = new FlickrClient.FlickrClientBuilder(activity)
 						.clientSecret("80861547e3099611")
 						.clientId("e00ba2ba9f093e1b4d777d24fd3c2d9f")
 						.build();
@@ -97,11 +95,9 @@ public class Main extends Activity {
 		bmb.addBuilder(createHamButton(Color.DKGRAY, "Test Imgur", "Without authorization", imgur, new OnBMClickListener() {
 			@Override
 			public void onBoomButtonClick(int index) {
-				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder()
+				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder(activity)
 						.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 						.clientId("3560cc6fe6a380b")
-						.accessToken("ff3aed3c0550d22a88d9b260878dfda24454efd6")
-						.refreshToken("ed4a601df2db19211ab91a3386514595ff957e9c")
 						.build();
 				doTests(client);
 			}
@@ -109,7 +105,7 @@ public class Main extends Activity {
 		bmb.addBuilder(createHamButton(Color.DKGRAY, "Test Imgur", "With authorization", imgur, new OnBMClickListener() {
 			@Override
 			public void onBoomButtonClick(int index) {
-				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder()
+				EpictureClientAbstract client = new ImgurClient.ImgurClientBuilder(activity)
 						.clientSecret("e18f03df7f0e0bac37285b83f1b4264644d230d2")
 						.clientId("3560cc6fe6a380b")
 						.build();
@@ -134,9 +130,13 @@ public class Main extends Activity {
 	}
 
 	private void doTests(final EpictureClientAbstract client) {
-		doMe(client);
-		doFavoriteImage(client);
-		doGetImage(client);
+		mAdapter.add("Access token : " + client.getAccessToken());
+		mAdapter.add("Refresh token : " + client.getRefreshToken());
+		mAdapter.add("ClientId : " + client.getClientId());
+		mAdapter.add("ClientSecret : " + client.getClientSecret());
+		mAdapter.add("Username : " + client.getUsername());
+//		doFavoriteImage(client);
+//		doGetImage(client);
 		doGetImages(client);
 //		doSearchImages(client);
 //		doUploadImage(client);
@@ -181,6 +181,9 @@ public class Main extends Activity {
 		client.favoriteImage("Uo6bfo4", callback);
 		client.favoriteImage(null, callback);
 		client.favoriteImage("nopeFail", callback);
+		client.unfavoriteImage("Uo6bfo4", callback);
+		client.unfavoriteImage(null, callback);
+		client.unfavoriteImage("nopeFail", callback);
 	}
 
 	private void doGetImage(final EpictureClientAbstract client) {
@@ -229,10 +232,10 @@ public class Main extends Activity {
 		client.getImages(callback);
 		client.getImages(0, callback);
 		client.getImages(1, callback);
-		client.getImages("706f696e7477686f7265", callback);
+		client.getImages("JinLaPiscine", callback);
 		client.getImages(null, callback);
-		client.getImages("706f696e7477686f7265", 0, callback);
-		client.getImages("706f696e7477686f7265", 1, callback);
+		client.getImages("EpictureJin", 0, callback);
+		client.getImages("EpictureJinpron", 1, callback);
 	}
 
 	private void doSearchImages(final EpictureClientAbstract client) {
@@ -281,21 +284,6 @@ public class Main extends Activity {
 		client.uploadImage("nopeFail", callback);
 		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", callback);
 		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", null, "Test", "Test api", "Test api", callback);
-	}
-
-	private void doMe(final EpictureClientAbstract client) {
-		client.me(new EpictureCallbackInterface<EpictureUser>() {
-			@Override
-			public void success(EpictureResponseWrapper<EpictureUser> response) {
-				mAdapter.add("Id : " + response.data.getId());
-				Log.d(TAG, "Id : " + response.data.getId());
-			}
-
-			@Override
-			public void error(EpictureResponseWrapper<EpictureError> error) {
-				printError(error);
-			}
-		});
 	}
 }
 

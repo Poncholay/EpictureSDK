@@ -47,7 +47,7 @@ public class ResponseAdapter extends ArrayAdapter<String> {
 	public int getItemViewType(int position) {
 		String response = getItem(position);
 
-		if (response.startsWith("Url : http://i.imgur.com") || response.startsWith("Thumbnail : http://i.imgur.com")) {
+		if (response.startsWith("Url : http") || response.startsWith("Thumbnail : http")) {
 			return 1;
 		}
 		return 0;

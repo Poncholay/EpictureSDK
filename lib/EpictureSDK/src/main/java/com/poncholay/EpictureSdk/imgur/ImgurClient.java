@@ -1,10 +1,11 @@
 package com.poncholay.EpictureSdk.imgur;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
@@ -16,9 +17,7 @@ import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.imgur.model.ImgurAuthorization;
 import com.poncholay.EpictureSdk.imgur.model.ImgurError;
 import com.poncholay.EpictureSdk.imgur.model.ImgurPicture;
-import com.poncholay.EpictureSdk.imgur.model.ImgurUser;
 import com.poncholay.EpictureSdk.model.EpictureAuthorization;
-import com.poncholay.EpictureSdk.model.EpictureError;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
 import com.poncholay.EpictureSdk.model.response.EpictureResponseWrapper;
 
@@ -28,12 +27,8 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import cz.msebera.android.httpclient.Header;
-
-import static com.poncholay.EpictureSdk.R.id.image;
 
 public class ImgurClient extends EpictureClientAbstract {
 
@@ -41,19 +36,23 @@ public class ImgurClient extends EpictureClientAbstract {
 	private final String EXCHANGE_URL = "https://api.imgur.com/oauth2/token";
 	private final String clientId;
 	private final String clientSecret;
+	private Activity activity;
 	private String accessToken;
 	private String refreshToken;
 	private String username;
 	private Gson gson;
 
-	private ImgurClient(String clientPublic, String clientSecret, String accessToken, String refreshToken) {
+	private ImgurClient(Activity activity, String clientPublic, String clientSecret, String accessToken, String refreshToken) {
 		super("https://api.imgur.com/3/");
 		this.clientId = clientPublic;
 		this.clientSecret = clientSecret;
 		this.gson = new GsonBuilder().create();
-		this.username = null;
-		setAccessToken(accessToken);
-		setRefreshToken(refreshToken);
+		this.activity = activity;
+
+		SharedPreferences prefs = activity.getPreferences(Context.MODE_PRIVATE);
+		this.username = prefs.getString("ImgurUsername", null);
+		setAccessToken(accessToken == null ? prefs.getString("ImgurAccessToken", null) : accessToken);
+		setRefreshToken(refreshToken == null ? prefs.getString("ImgurRefreshToken", null) : refreshToken);
 	}
 
 	private void exchangePinForTokens(String pin, final EpictureCallbackInterface callback) {
@@ -128,33 +127,6 @@ public class ImgurClient extends EpictureClientAbstract {
 		pinValidator(context, callback);
 	}
 
-	@Override
-	public void me(final EpictureCallbackInterface callback) {
-		this.get("account/me", new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-				if (callback != null) {
-					try {
-						callback.success(gson.fromJson(response.toString(), ImgurUser.ImgurUserWrapperEpicture.class));
-					} catch (Exception e) {
-						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "me")));
-					}
-				}
-			}
-
-			@Override
-			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-				if (callback != null) {
-					try {
-						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
-					} catch (Exception e) {
-						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "me")));
-					}
-				}
-			}
-		});
-	}
-
 	private void callFavorite(final String id, final EpictureCallbackInterface callback, final boolean result) {
 		this.post("image/" + id + "/favorite", new JsonHttpResponseHandler() {
 			@Override
@@ -204,29 +176,18 @@ public class ImgurClient extends EpictureClientAbstract {
 	public void getImages(String username, EpictureCallbackInterface callback) {
 		if (username == null) {
 			getImages(0, callback);
-			return;
+		} else {
+			getImages(username, 0, callback);
 		}
-		getImages(username, 0, callback);
 	}
 
 	@Override
-	public void getImages(final int page, final EpictureCallbackInterface callback) {
+	public void getImages(int page, EpictureCallbackInterface callback) {
 		if (this.username != null) {
 			getImages(this.username, page, callback);
-			return;
+		} else if (callback != null) {
+			callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not retrieve username", "getImages")));
 		}
-		me(new EpictureCallbackInterface<ImgurUser>() {
-			@Override
-			public void success(EpictureResponseWrapper<ImgurUser> response) {
-				setUsername(response.data.getUsername());
-				getImages(response.data.getUsername(), page, callback);
-			}
-
-			@Override
-			public void error(EpictureResponseWrapper<EpictureError> error) {
-				callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not retrieve username", "getImages")));
-			}
-		});
 	}
 
 	@Override
@@ -260,12 +221,10 @@ public class ImgurClient extends EpictureClientAbstract {
 	private String buildSearchQuery(String search, String operator) {
 		StringBuilder query = new StringBuilder();
 		String[] params = search.split(" ");
-//		query.append("q=title: ");
 		query.append("q_any=");
 		boolean first = true;
 		for (String param : params) {
 			if (!first) {
-//				query.append(" " + operator + " ");
 				query.append(" ");
 			} else {
 				first = false;
@@ -273,7 +232,6 @@ public class ImgurClient extends EpictureClientAbstract {
 			query.append(param);
 		}
 		query.append("&q_type=png");
-		Log.d("QUERY", query.toString());
 		return query.toString();
 	}
 
@@ -437,27 +395,40 @@ public class ImgurClient extends EpictureClientAbstract {
 		return "Imgur";
 	}
 
+	private void storeInSharedPreferences(String key, String value) {
+		SharedPreferences sharedPrefs = activity.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putString(key, value);
+		editor.apply();
+	}
+
 	private void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 		this.setAuthorizationHeader(accessToken);
+		storeInSharedPreferences("ImgurAccessToken", accessToken);
 	}
 
 	private void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
+		storeInSharedPreferences("ImgurRefreshToken", refreshToken);
 	}
 
 	private void setUsername(String username) {
 		this.username = username;
+		storeInSharedPreferences("ImgurUsername", username);
 	}
 
 	public static class ImgurClientBuilder {
 
+		private Activity nestedActivity;
 		private String nestedClientPublic;
 		private String nestedClientSecret;
 		private String nestedAccessToken;
 		private String nestedRefreshToken;
 
-		public ImgurClientBuilder() {}
+		public ImgurClientBuilder(Activity activity) {
+			this.nestedActivity = activity;
+		}
 
 		public ImgurClientBuilder clientId(String clientPublic) {
 			this.nestedClientPublic = clientPublic;
@@ -480,7 +451,7 @@ public class ImgurClient extends EpictureClientAbstract {
 		}
 
 		public ImgurClient build() {
-			return new ImgurClient(nestedClientPublic, nestedClientSecret, nestedAccessToken, nestedRefreshToken);
+			return new ImgurClient(nestedActivity, nestedClientPublic, nestedClientSecret, nestedAccessToken, nestedRefreshToken);
 		}
 	}
 }

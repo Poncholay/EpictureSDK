@@ -29,8 +29,6 @@ public abstract class EpictureClientAbstract {
 
 	abstract public void authorize(Context context, EpictureCallbackInterface callback);
 
-	abstract public void me(EpictureCallbackInterface callback);
-
 	abstract public void favoriteImage(String id, EpictureCallbackInterface callback);
 	abstract public void unfavoriteImage(String id, EpictureCallbackInterface callback);
 
@@ -83,6 +81,10 @@ public abstract class EpictureClientAbstract {
 
 	protected void postUrl(String url, AsyncHttpResponseHandler responseHandler) {
 		client.post(url, null, responseHandler);
+	}
+
+	protected String getBaseUrl() {
+		return URL;
 	}
 
 	private String getAbsoluteUrl(String relativeUrl) {
