@@ -135,9 +135,9 @@ public class Main extends Activity {
 		mAdapter.add("ClientId : " + client.getClientId());
 		mAdapter.add("ClientSecret : " + client.getClientSecret());
 		mAdapter.add("Username : " + client.getUsername());
-		doFavoriteImage(client);
-		doGetImage(client);
-		doGetImages(client);
+//		doFavoriteImage(client);
+//		doGetImage(client);
+//		doGetImages(client);
 		doSearchImages(client);
 //		doUploadImage(client);
 	}
@@ -290,7 +290,7 @@ public class Main extends Activity {
 
 //	Flickr and Imgur API implementation
 //		OK 		• Connecting to the Flickr and Imgur platforms
-//		IM 		• The photo display put online by the user connected to Flickr and Imgur
+//		OK 		• The photo display put online by the user connected to Flickr and Imgur
 //		IM 		• Flickr and Imgur photo finder
 //		IM 		• Uploading photos to Flickr and Imgur
 //		IM 		• Adding/deleting photos to/from your favorites

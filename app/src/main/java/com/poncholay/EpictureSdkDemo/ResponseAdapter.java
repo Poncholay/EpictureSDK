@@ -20,19 +20,27 @@ public class ResponseAdapter extends ArrayAdapter<String> {
 
 	@NonNull
 	@Override
-	public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+	public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
 		String response = getItem(position);
 
 		if (convertView == null) {
 			if (getItemViewType(position) == 1) {
-				response = response.replaceFirst("Url : ", "").replaceFirst("Thumbnail : ", "");
 				convertView = LayoutInflater.from(getContext()).inflate(R.layout.image, null);
-				ImageLoader imageLoader = ImageLoader.getInstance();
-				imageLoader.displayImage(response, (ImageView) convertView);
 			} else {
 				convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, null);
 				((TextView) convertView).setText(response);
 			}
+		}
+
+		if (getItemViewType(position) == 1) {
+			response = response.replaceFirst("Url : ", "").replaceFirst("Thumbnail : ", "");
+			ImageLoader imageLoader = ImageLoader.getInstance();
+			if (response.contains("imgur")) {
+				((ImageView) convertView).setImageResource(R.drawable.imgur);
+			} else {
+				((ImageView) convertView).setImageResource(R.drawable.flickr);
+			}
+			imageLoader.displayImage(response, (ImageView) convertView);
 		}
 
 		return convertView;

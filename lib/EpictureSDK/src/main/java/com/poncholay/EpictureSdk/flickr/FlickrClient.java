@@ -431,9 +431,40 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	@Override
 	public void searchImages(String search, int page, final EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "searchImage")));
-		}
+		TreeMap<String, String> params = getDefaultAuthParam();
+
+		params.put("api_key", clientId);
+		params.put("page", String.valueOf(page));
+		params.put("extras", "url_o,url_m");
+		params.put("format", "json");
+		params.put("method", "flickr.photos.search");
+		params.put("text", search);
+
+		String signature = encodeUrl(getSignature("GET", getBaseUrl(), params, privateToken), REGULAR);
+		String url = "?" + getParamString(params);
+		url += "&oauth_signature=" + signature;
+
+		get(url, new JsonHttpResponseHandler() {
+			@Override
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				try {
+					if (statusCode == 200) {
+						JSONObject resp = extractJSON(response);
+						if (handleResponseError(resp, callback)) {
+							JSONObject data = new JSONObject();
+							data.put("data", resp.getJSONObject("photos").getJSONArray("photo"));
+							data.put("success", true);
+							data.put("status", 200);
+							callback.success(gson.fromJson(data.toString(), FlickrPicture.FlickrPictureArrayWrapperEpicture.class));
+						}
+					}
+				} catch (Exception e) {
+					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImages")));
+				}
+
+			}
+		});
 	}
 
 	@Override
