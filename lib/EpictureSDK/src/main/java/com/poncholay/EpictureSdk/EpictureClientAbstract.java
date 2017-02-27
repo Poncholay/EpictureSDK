@@ -39,6 +39,8 @@ public abstract class EpictureClientAbstract {
 
 	abstract public void searchImages(String search, EpictureCallbackInterface callback);
 	abstract public void searchImages(String search, int page, EpictureCallbackInterface callback);
+	abstract public void searchMyImages(String search, EpictureCallbackInterface callback);
+	abstract public void searchMyImages(String search, int page, EpictureCallbackInterface callback);
 
 	abstract public void getImage(String id, EpictureCallbackInterface callback);
 

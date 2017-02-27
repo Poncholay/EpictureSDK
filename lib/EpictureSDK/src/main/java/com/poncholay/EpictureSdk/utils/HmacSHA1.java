@@ -1,5 +1,7 @@
 package com.poncholay.EpictureSdk.utils;
 
+import android.util.Log;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 

@@ -135,11 +135,11 @@ public class Main extends Activity {
 		mAdapter.add("ClientId : " + client.getClientId());
 		mAdapter.add("ClientSecret : " + client.getClientSecret());
 		mAdapter.add("Username : " + client.getUsername());
-//		doFavoriteImage(client);
-//		doGetImage(client);
-//		doGetImages(client);
+		doFavoriteImage(client);
+		doGetImage(client);
+		doGetImages(client);
 		doSearchImages(client);
-//		doUploadImage(client);
+		doUploadImage(client);
 	}
 
 	private void printError(EpictureResponseWrapper<EpictureError> error) {
@@ -178,12 +178,12 @@ public class Main extends Activity {
 				printError(error);
 			}
 		};
-		client.favoriteImage("Uo6bfo4", callback);
-		client.favoriteImage(null, callback);
-		client.favoriteImage("nopeFail", callback);
-		client.unfavoriteImage("Uo6bfo4", callback);
-		client.unfavoriteImage(null, callback);
-		client.unfavoriteImage("nopeFail", callback);
+//		client.favoriteImage("Uo6bfo4", callback);
+//		client.favoriteImage(null, callback);
+		client.favoriteImage("27152461283", callback);
+//		client.unfavoriteImage("Uo6bfo4", callback);
+//		client.unfavoriteImage(null, callback);
+//		client.unfavoriteImage("27152461283", callback);
 	}
 
 	private void doGetImage(final EpictureClientAbstract client) {
@@ -192,8 +192,10 @@ public class Main extends Activity {
 			public void success(EpictureResponseWrapper<EpicturePicture> response) {
 				mAdapter.add("Url : " + response.data.getUrl());
 				mAdapter.add("Thumbnail : " + response.data.getThumbnail());
+				mAdapter.add("Id : " + response.data.getId());
 				Log.d(TAG, "Url : " + response.data.getUrl());
 				Log.d(TAG, "Thumbnail : " + response.data.getThumbnail());
+				Log.d(TAG, "Id : " + response.data.getId());
 			}
 
 			@Override
@@ -220,8 +222,10 @@ public class Main extends Activity {
 				for (EpicturePicture picture : pictures) {
 					mAdapter.add("Url : " + picture.getUrl());
 					mAdapter.add("Thumbnail : " + picture.getThumbnail());
+					mAdapter.add("Id : " + picture.getId());
 					Log.d(TAG, "Url : " + picture.getUrl());
 					Log.d(TAG, "Thumbnail : " + picture.getThumbnail());
+					Log.d(TAG, "Id : " + picture.getId());
 				}
 			}
 
@@ -252,8 +256,10 @@ public class Main extends Activity {
 				for (EpicturePicture picture : pictures) {
 					mAdapter.add("Url : " + picture.getUrl());
 					mAdapter.add("Thumbnail : " + picture.getThumbnail());
+					mAdapter.add("Id : " + picture.getId());
 					Log.d(TAG, "Url : " + picture.getUrl());
 					Log.d(TAG, "Thumbnail : " + picture.getThumbnail());
+					Log.d(TAG, "Id : " + picture.getId());
 				}
 			}
 
@@ -265,6 +271,9 @@ public class Main extends Activity {
 		client.searchImages("MilcenSlip", callback);
 		client.searchImages("Nyan cat", 0, callback);
 		client.searchImages("", 2, callback);
+		client.searchMyImages("MilcenSlip", callback);
+		client.searchMyImages("suuu", 0, callback);
+		client.searchMyImages("", 2, callback);
 	}
 
 	private void doUploadImage(final EpictureClientAbstract client) {
@@ -291,7 +300,7 @@ public class Main extends Activity {
 //	Flickr and Imgur API implementation
 //		OK 		• Connecting to the Flickr and Imgur platforms
 //		OK 		• The photo display put online by the user connected to Flickr and Imgur
-//		IM 		• Flickr and Imgur photo finder
+//		OK 		• Flickr and Imgur photo finder
 //		IM 		• Uploading photos to Flickr and Imgur
 //		IM 		• Adding/deleting photos to/from your favorites
-//		   		• Managing photo display filters
+//		.. 		• Managing photo display filters

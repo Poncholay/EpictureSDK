@@ -28,7 +28,6 @@ public class ResponseAdapter extends ArrayAdapter<String> {
 				convertView = LayoutInflater.from(getContext()).inflate(R.layout.image, null);
 			} else {
 				convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, null);
-				((TextView) convertView).setText(response);
 			}
 		}
 
@@ -41,6 +40,8 @@ public class ResponseAdapter extends ArrayAdapter<String> {
 				((ImageView) convertView).setImageResource(R.drawable.flickr);
 			}
 			imageLoader.displayImage(response, (ImageView) convertView);
+		} else {
+			((TextView) convertView).setText(response);
 		}
 
 		return convertView;

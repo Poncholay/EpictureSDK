@@ -236,6 +236,18 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	@Override
+	public void searchMyImages(String search, EpictureCallbackInterface callback) {
+		searchImages(search, callback);
+		//TODO : implement it
+	}
+
+	@Override
+	public void searchMyImages(String search, int page, EpictureCallbackInterface callback) {
+		searchImages(search, page, callback);
+		//TODO : implement it
+	}
+
+	@Override
 	public void searchImages(String search, EpictureCallbackInterface callback) {
 		searchImages(search, 0, callback);
 	}
