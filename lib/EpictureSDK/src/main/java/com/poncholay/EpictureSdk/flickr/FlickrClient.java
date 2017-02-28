@@ -130,7 +130,6 @@ public class FlickrClient extends EpictureClientAbstract {
 		params.put("oauth_consumer_key", clientId);
 		params.put("oauth_signature_method", "HMAC-SHA1");
 		params.put("oauth_version", "1.0");
-		params.put("perms", "delete");
 		return params;
 	}
 
@@ -195,6 +194,7 @@ public class FlickrClient extends EpictureClientAbstract {
 				//AccessToken response always registers as failure so we treat it here
 				if (statusCode == 200) {
 					if (parseResponseForParam(response, "oauth_token") != null && parseResponseForParam(response, "oauth_token_secret") != null) {
+
 						setAccessToken(parseResponseForParam(response, "oauth_token"));
 						setPrivateToken(parseResponseForParam(response, "oauth_token_secret"));
 						setUsername(parseResponseForParam(response, "username"));
@@ -260,7 +260,7 @@ public class FlickrClient extends EpictureClientAbstract {
 							return;
 						}
 					}
-					Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken));
+					Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(AUTHORIZE_URL + "?oauth_token=" + accessToken + "&perms=delete"));
 					context.startActivity(browserIntent);
 					pinValidator(context, callback);
 				} else {
@@ -286,17 +286,17 @@ public class FlickrClient extends EpictureClientAbstract {
 		TreeMap<String, String> params = getDefaultAuthParam();
 
 		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
-		params.put("oauth_token", accessToken);
+		params.put("oauth_token", encodeUrl(accessToken, REGULAR));
 		params.put("api_key", clientId);
 		params.put("photo_id", id);
 		params.put("format", "json");
-		params.put("method", "flickr.favorites." + (favorite ? "add" : "remove"));
+		params.put("method", encodeUrl("flickr.favorites." + (favorite ? "add" : "remove"), REGULAR));
 
-		String signature = encodeUrl(getSignature("POST", getBaseUrl(), params, privateToken), REGULAR);
+		String signature = encodeUrl(getSignature("GET", getBaseUrl(), params, privateToken), REGULAR);
 		String url = "?" + getParamString(params);
 		url += "&oauth_signature=" + signature;
 
-		this.post(url, new JsonHttpResponseHandler() {
+		this.get(url, new JsonHttpResponseHandler() {
 			@Override
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here

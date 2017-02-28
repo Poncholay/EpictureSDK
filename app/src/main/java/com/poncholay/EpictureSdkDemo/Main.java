@@ -178,12 +178,12 @@ public class Main extends Activity {
 				printError(error);
 			}
 		};
-//		client.favoriteImage("Uo6bfo4", callback);
-//		client.favoriteImage(null, callback);
+		client.favoriteImage("Uo6bfo4", callback);
+		client.favoriteImage(null, callback);
 		client.favoriteImage("27152461283", callback);
-//		client.unfavoriteImage("Uo6bfo4", callback);
-//		client.unfavoriteImage(null, callback);
-//		client.unfavoriteImage("27152461283", callback);
+		client.unfavoriteImage("Uo6bfo4", callback);
+		client.unfavoriteImage(null, callback);
+		client.unfavoriteImage("27152461283", callback);
 	}
 
 	private void doGetImage(final EpictureClientAbstract client) {
@@ -302,5 +302,5 @@ public class Main extends Activity {
 //		OK 		• The photo display put online by the user connected to Flickr and Imgur
 //		OK 		• Flickr and Imgur photo finder
 //		IM 		• Uploading photos to Flickr and Imgur
-//		IM 		• Adding/deleting photos to/from your favorites
+//		OK 		• Adding/deleting photos to/from your favorites
 //		.. 		• Managing photo display filters
