@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
@@ -545,8 +546,7 @@ public class FlickrClient extends EpictureClientAbstract {
 			return;
 		}
 
-		RequestParams parameters = new RequestParams();
-		TreeMap<String, String> params = getDefaultAuthParam();
+		TreeMap<String, String> params = new TreeMap<>();
 
 		params.put("oauth_timestamp", String.valueOf(new Date().getTime()));
 		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
@@ -554,21 +554,13 @@ public class FlickrClient extends EpictureClientAbstract {
 		params.put("oauth_consumer_key", clientId);
 		params.put("oauth_signature_method", "HMAC-SHA1");
 		params.put("oauth_version", "1.0");
-		params.put("format", "json");
-		params.put("title", encodeUrl(title, REGULAR));
-		params.put("description", encodeUrl(description, REGULAR));
+//		params.put("format", "json");
+//		params.put("title", encodeUrl(title, REGULAR));
+//		params.put("description", encodeUrl(description, REGULAR));
 
 		String signature = encodeUrl(getSignature("POST", UPLOAD_URL, params, privateToken), REGULAR);
 
-		parameters.put("oauth_timestamp", params.get("oauth_timestamp"));
-		parameters.put("oauth_nonce", params.get("oauth_nonce"));
-		parameters.put("oauth_token", params.get("oauth_token"));
-		parameters.put("oauth_consumer_key", params.get("oauth_consumer_key"));
-		parameters.put("oauth_signature_method", params.get("oauth_signature_method"));
-		parameters.put("oauth_version", params.get("oauth_version"));
-		parameters.put("format", params.get("format"));
-		parameters.put("title", params.get("title"));
-		parameters.put("description", params.get("description"));
+		RequestParams parameters = new RequestParams(params);
 		try {
 			parameters.put("photo", new File(path), filename);
 		} catch (FileNotFoundException e) {
@@ -634,7 +626,7 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	private void storeInSharedPreferences(String key, String value) {
-		SharedPreferences sharedPrefs = activity.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPrefs = activity.getSharedPreferences("Epicture", Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putString(key, value);
 		editor.apply();

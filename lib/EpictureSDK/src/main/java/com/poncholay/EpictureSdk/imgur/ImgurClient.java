@@ -409,7 +409,7 @@ public class ImgurClient extends EpictureClientAbstract {
 	}
 
 	private void storeInSharedPreferences(String key, String value) {
-		SharedPreferences sharedPrefs = activity.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPrefs = activity.getSharedPreferences("Epicture", Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putString(key, value);
 		editor.apply();
