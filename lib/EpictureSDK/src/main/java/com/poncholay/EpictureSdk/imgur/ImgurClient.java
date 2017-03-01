@@ -199,7 +199,6 @@ public class ImgurClient extends EpictureClientAbstract {
 					try {
 						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureArrayWrapperEpicture.class));
 					} catch (Exception e) {
-						e.printStackTrace();
 						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImages")));
 					}
 				}
@@ -320,7 +319,9 @@ public class ImgurClient extends EpictureClientAbstract {
 	public void uploadImage(String path, String album, String name, String title, String description, final EpictureCallbackInterface callback) {
 		byte[] image = loadBinaryFile(path);
 		if (image == null) {
-			callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("The image does not exist", "getImage")));
+			if (callback != null) {
+				callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("The image does not exist", "getImage")));
+			}
 			return;
 		}
 

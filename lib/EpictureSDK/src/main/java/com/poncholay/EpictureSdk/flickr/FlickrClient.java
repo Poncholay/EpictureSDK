@@ -11,6 +11,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.model.FlickrAuthorization;
 import com.poncholay.EpictureSdk.flickr.model.FlickrError;
@@ -23,6 +24,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
@@ -41,6 +44,7 @@ public class FlickrClient extends EpictureClientAbstract {
 	private final String AUTHORIZE_URL = "https://www.flickr.com/services/oauth/authorize";
 	private final String REQUEST_URL = "https://www.flickr.com/services/oauth/request_token";
 	private final String EXCHANGE_URL = "https://www.flickr.com/services/oauth/access_token";
+	private final String UPLOAD_URL = "https://up.flickr.com/services/upload/";
 	private final String clientId;
 	private final String clientSecret;
 	private Activity activity;
@@ -98,6 +102,9 @@ public class FlickrClient extends EpictureClientAbstract {
 	}
 
 	private String encodeUrl(String raw, boolean strict) {
+		if (raw == null) {
+			return "";
+		}
 		try {
 			if (strict) {
 				return URLEncoder.encode(raw.replace("+", "%20").replace("*", "%2A").replace("%7E", "~"), "UTF-8");
@@ -516,23 +523,84 @@ public class FlickrClient extends EpictureClientAbstract {
 				} catch (Exception e) {
 					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "searchImages")));
 				}
-
 			}
 		});
 	}
 
 	@Override
 	public void uploadImage(String path, EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "uploadImage")));
-		}
+		uploadImage(path, null, null, null, null, callback);
 	}
 
 	@Override
-	public void uploadImage(String path, String album, String name, String title, String description, EpictureCallbackInterface callback) {
-		if (callback != null) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "uploadImage")));
+	public void uploadImage(String path, String album, String name, String title, String description, final EpictureCallbackInterface callback) {
+		String[] split = path.split("\\.");
+		String filename;
+		if (split.length >= 2) {
+			filename = split[split.length - 1] + "." + split[split.length - 2];
+		} else if (split.length == 1) {
+			filename = split[split.length - 1];
+		} else {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Bad file", "uploadImage")));
+			return;
 		}
+
+		RequestParams parameters = new RequestParams();
+		TreeMap<String, String> params = getDefaultAuthParam();
+
+		params.put("oauth_timestamp", String.valueOf(new Date().getTime()));
+		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
+		params.put("oauth_token", encodeUrl(accessToken, REGULAR));
+		params.put("oauth_consumer_key", clientId);
+		params.put("oauth_signature_method", "HMAC-SHA1");
+		params.put("oauth_version", "1.0");
+		params.put("format", "json");
+		params.put("title", encodeUrl(title, REGULAR));
+		params.put("description", encodeUrl(description, REGULAR));
+
+		String signature = encodeUrl(getSignature("POST", UPLOAD_URL, params, privateToken), REGULAR);
+
+		parameters.put("oauth_timestamp", params.get("oauth_timestamp"));
+		parameters.put("oauth_nonce", params.get("oauth_nonce"));
+		parameters.put("oauth_token", params.get("oauth_token"));
+		parameters.put("oauth_consumer_key", params.get("oauth_consumer_key"));
+		parameters.put("oauth_signature_method", params.get("oauth_signature_method"));
+		parameters.put("oauth_version", params.get("oauth_version"));
+		parameters.put("format", params.get("format"));
+		parameters.put("title", params.get("title"));
+		parameters.put("description", params.get("description"));
+		try {
+			parameters.put("photo", new File(path), filename);
+		} catch (FileNotFoundException e) {
+			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Bad file", "uploadImage")));
+			return;
+		}
+		String url = UPLOAD_URL;
+		url += "?oauth_signature=" + signature;
+
+		postUrl(url, parameters, new JsonHttpResponseHandler() {
+			@Override
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				try {
+					if (statusCode == 200) {
+						JSONObject resp = extractJSON(response);
+						if (handleResponseError(resp, callback, "uploadImage")) {
+							JSONObject data = new JSONObject();
+							data.put("data", new FlickrPicture());
+							data.put("success", true);
+							data.put("status", 200);
+							callback.success(gson.fromJson(data.toString(), FlickrPicture.FlickrPictureWrapperEpicture.class));
+						}
+					} else {
+						callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError(response, "uploadImages")));
+					}
+				} catch (Exception e) {
+					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "uploadImage")));
+				}
+
+			}
+		});
 	}
 
 	@Override
