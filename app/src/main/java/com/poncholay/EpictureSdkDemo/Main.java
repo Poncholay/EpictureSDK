@@ -138,6 +138,7 @@ public class Main extends Activity {
 		doFavoriteImage(client);
 		doGetImage(client);
 		doGetImages(client);
+		doGetFavorites(client);
 		doSearchImages(client);
 		doUploadImage(client);
 	}
@@ -243,6 +244,35 @@ public class Main extends Activity {
 		client.getImages("EpictureJinpron", 1, callback);
 	}
 
+	private void doGetFavorites(final EpictureClientAbstract client) {
+		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
+			@Override
+			public void success(EpictureResponseArrayWrapper<EpicturePicture> response) {
+				List<EpicturePicture> pictures = response.data;
+
+				if (pictures.size() == 0) {
+					mAdapter.add("No results");
+					Log.d(TAG, "No results");
+				}
+				for (EpicturePicture picture : pictures) {
+					mAdapter.add("Url : " + picture.getUrl());
+					mAdapter.add("Thumbnail : " + picture.getThumbnail());
+					mAdapter.add("Id : " + picture.getId());
+					Log.d(TAG, "Url : " + picture.getUrl());
+					Log.d(TAG, "Thumbnail : " + picture.getThumbnail());
+					Log.d(TAG, "Id : " + picture.getId());
+				}
+			}
+
+			@Override
+			public void error(EpictureResponseWrapper<EpictureError> error) {
+				printError(error);
+			}
+		};
+		client.getFavoriteImages(callback);
+		client.getFavoriteImages(0, callback);
+	}
+
 	private void doSearchImages(final EpictureClientAbstract client) {
 		EpictureCallbackInterface<EpicturePicture> callback = new EpictureCallbackInterface<EpicturePicture>() {
 			@Override
@@ -291,9 +321,9 @@ public class Main extends Activity {
 				printError(error);
 			}
 		};
-		client.uploadImage("nopeFail", callback);
+//		client.uploadImage("nopeFail", callback);
 		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", callback);
-		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", null, "Test", "Test api", "Test api", callback);
+//		client.uploadImage("/storage/sdcard1/DCIM/100ANDRO/DSC_0483.JPG", null, "Test", "Test api", "Test api", callback);
 	}
 }
 

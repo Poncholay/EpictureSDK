@@ -217,6 +217,38 @@ public class ImgurClient extends EpictureClientAbstract {
 		});
 	}
 
+	@Override
+	public void getFavoriteImages(final EpictureCallbackInterface callback) {
+		getFavoriteImages(0, callback);
+	}
+
+	@Override
+	public void getFavoriteImages(int page, final EpictureCallbackInterface callback) {
+		this.get("/account/" + username + "/favorites/" + page, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+				if (callback != null) {
+					try {
+						callback.success(gson.fromJson(response.toString(), ImgurPicture.ImgurPictureArrayWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImages")));
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+				if (callback != null) {
+					try {
+						callback.error(gson.fromJson(errorResponse.toString(), ImgurError.ImgurErrorWrapperEpicture.class));
+					} catch (Exception e) {
+						callback.error(new EpictureResponseWrapper<>(false, 500, new ImgurError("Could not handle response", "getImages")));
+					}
+				}
+			}
+		});
+	}
+
 	private String buildSearchQuery(String search, String operator) {
 		StringBuilder query = new StringBuilder();
 		String[] params = search.split(" ");

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
@@ -61,7 +60,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		this.clientSecret = clientSecret;
 		this.gson = new GsonBuilder().create();
 
-		SharedPreferences prefs = activity.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences prefs = activity.getSharedPreferences("Epicture", Context.MODE_PRIVATE);
 		this.username = prefs.getString("FlickrUsername", null);
 		setAccessToken(accessToken == null ? prefs.getString("FlickrAccessToken", null) : accessToken);
 		setPrivateToken(refreshToken == null ? prefs.getString("FlickrRefreshToken", null) : refreshToken);
@@ -424,6 +423,52 @@ public class FlickrClient extends EpictureClientAbstract {
 				} catch (Exception e) {
 					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImages")));
 				}
+			}
+		});
+	}
+
+	@Override
+	public void getFavoriteImages(final EpictureCallbackInterface callback) {
+		getFavoriteImages(0, callback);
+	}
+
+	@Override
+	public void getFavoriteImages(int page, final EpictureCallbackInterface callback) {
+		TreeMap<String, String> params = getDefaultAuthParam();
+
+		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
+		params.put("oauth_token", accessToken);
+		params.put("api_key", clientId);
+		params.put("page", String.valueOf(page));
+		params.put("extras", "url_o,url_m");
+		params.put("format", "json");
+		params.put("method", "flickr.favorites.getList");
+
+		String signature = encodeUrl(getSignature("GET", getBaseUrl(), params, privateToken), REGULAR);
+		String url = "?" + getParamString(params);
+		url += "&oauth_signature=" + signature;
+
+		this.get(url, new JsonHttpResponseHandler() {
+			@Override
+			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
+				//RequestToken response always registers as failure so we treat it here
+				try {
+					if (statusCode == 200) {
+						JSONObject resp = extractJSON(response);
+						if (handleResponseError(resp, callback, "getFavoriteImages")) {
+							JSONObject data = new JSONObject();
+							data.put("data", resp.getJSONObject("photos").getJSONArray("photo"));
+							data.put("success", true);
+							data.put("status", 200);
+							callback.success(gson.fromJson(data.toString(), FlickrPicture.FlickrPictureArrayWrapperEpicture.class));
+						}
+					} else {
+						callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError(response, "getFavoriteImages")));
+					}
+				} catch (Exception e) {
+					callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Flickr responded oddly", "getImages")));
+				}
+
 			}
 		});
 	}
