@@ -4,8 +4,11 @@ import android.content.Context;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.LogInterface;
 import com.loopj.android.http.RequestParams;
 import com.poncholay.EpictureSdk.model.response.EpictureCallbackInterface;
+
+import cz.msebera.android.httpclient.HttpEntity;
 
 public abstract class EpictureClientAbstract {
 
@@ -15,6 +18,7 @@ public abstract class EpictureClientAbstract {
 	protected EpictureClientAbstract(String URL) {
 		this.URL = URL;
 		this.client = new AsyncHttpClient();
+		this.client.setLoggingLevel(LogInterface.VERBOSE);
 	}
 
 	abstract public String getClientId();
@@ -70,6 +74,10 @@ public abstract class EpictureClientAbstract {
 
 	protected void postUrl(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		client.post(url, params, responseHandler);
+	}
+
+	protected void postUrlWithEntity(String url, HttpEntity entity, AsyncHttpResponseHandler responseHandler) {
+		client.post(null, url, entity, entity.getContentType().getValue(), responseHandler);
 	}
 
 	protected void get(String url, AsyncHttpResponseHandler responseHandler) {

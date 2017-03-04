@@ -11,7 +11,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.poncholay.EpictureSdk.EpictureClientAbstract;
 import com.poncholay.EpictureSdk.flickr.model.FlickrAuthorization;
 import com.poncholay.EpictureSdk.flickr.model.FlickrError;
@@ -25,9 +24,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +34,9 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
+import cz.msebera.android.httpclient.entity.mime.content.FileBody;
 
 import static com.poncholay.EpictureSdk.utils.HmacSHA1.hmacSha1;
 
@@ -437,7 +439,7 @@ public class FlickrClient extends EpictureClientAbstract {
 		TreeMap<String, String> params = getDefaultAuthParam();
 
 		params.put("oauth_nonce", encodeUrl(generateNonce(), REGULAR));
-		params.put("oauth_token", accessToken);
+		params.put("oauth_token", encodeUrl(accessToken, REGULAR));
 		params.put("api_key", clientId);
 		params.put("page", String.valueOf(page));
 		params.put("extras", "url_o,url_m");
@@ -580,16 +582,8 @@ public class FlickrClient extends EpictureClientAbstract {
 
 	@Override
 	public void uploadImage(String path, String album, String name, String title, String description, final EpictureCallbackInterface callback) {
-		String[] split = path.split("\\.");
-		String filename;
-		if (split.length >= 2) {
-			filename = split[split.length - 1] + "." + split[split.length - 2];
-		} else if (split.length == 1) {
-			filename = split[split.length - 1];
-		} else {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Bad file", "uploadImage")));
-			return;
-		}
+		String[] split = path.split("/");
+		String filename = split.length >= 2 ? split[split.length - 1] : path;
 
 		TreeMap<String, String> params = new TreeMap<>();
 
@@ -605,17 +599,23 @@ public class FlickrClient extends EpictureClientAbstract {
 
 		String signature = encodeUrl(getSignature("POST", UPLOAD_URL, params, privateToken), REGULAR);
 
-		RequestParams parameters = new RequestParams(params);
-		try {
-			parameters.put("photo", new File(path), filename);
-		} catch (FileNotFoundException e) {
-			callback.error(new EpictureResponseWrapper<>(false, 42, new FlickrError("Bad file", "uploadImage")));
-			return;
-		}
+		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+		FileBody bin = new FileBody(new File(path), ContentType.create("image/jpeg"), filename);
+
+		entity.setBoundary("FlickrSucks");
+		entity.setCharset(StandardCharsets.UTF_8);
+		entity.addTextBody("oauth_timestamp", params.get("oauth_timestamp"), ContentType.MULTIPART_FORM_DATA);
+		entity.addTextBody("oauth_nonce", params.get("oauth_nonce"), ContentType.MULTIPART_FORM_DATA);
+		entity.addTextBody("oauth_token", params.get("oauth_token"), ContentType.MULTIPART_FORM_DATA);
+		entity.addTextBody("oauth_consumer_key", params.get("oauth_consumer_key"), ContentType.MULTIPART_FORM_DATA);
+		entity.addTextBody("oauth_signature_method", params.get("oauth_signature_method"), ContentType.MULTIPART_FORM_DATA);
+		entity.addTextBody("oauth_version", params.get("oauth_version"), ContentType.MULTIPART_FORM_DATA);
+		entity.addPart("photo", bin);
+
 		String url = UPLOAD_URL;
 		url += "?oauth_signature=" + signature;
 
-		postUrl(url, parameters, new JsonHttpResponseHandler() {
+		postUrlWithEntity(url, entity.build(), new JsonHttpResponseHandler() {
 			@Override
 			public void onFailure(int statusCode, Header[] headers, String response, Throwable throwable) {
 				//RequestToken response always registers as failure so we treat it here
